@@ -176,7 +176,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
         try:
             import json
             result = json.loads(response)
-            result["ai_model_used"] = "gpt-4o-mini"
+            result["ai_model_used"] = "claude-3-5-sonnet-20241022"
             return result
         except json.JSONDecodeError:
             # Fallback if response isn't valid JSON
