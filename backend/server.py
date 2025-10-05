@@ -136,7 +136,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             api_key=ANTHROPIC_API_KEY,
             session_id=f"analysis_{uuid.uuid4()}",
             system_message=ANALYSIS_TEMPLATE
-        ).with_model("anthropic", "claude-3-5-sonnet-20241022")
+        ).with_model("anthropic", "claude-3-5-sonnet-20240620")
         
         prompt = f"Analyze this {file_type} code:\n\n```{file_type}\n{content}\n```"
         user_message = UserMessage(text=prompt)
