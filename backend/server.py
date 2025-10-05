@@ -155,7 +155,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             api_key=EMERGENT_LLM_KEY,
             session_id=f"analysis_{uuid.uuid4()}",
             system_message=ANALYSIS_TEMPLATES.get(analysis_type, ANALYSIS_TEMPLATES["comprehensive"])
-        ).with_model("openai", "gpt-4o-mini")
+        ).with_model("anthropic", "claude-3-5-sonnet-20241022")
         
         # Create analysis prompt
         prompt = f"""
