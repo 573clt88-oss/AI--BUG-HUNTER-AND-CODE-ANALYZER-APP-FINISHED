@@ -157,7 +157,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             api_key=api_key_to_use,
             session_id=f"analysis_{uuid.uuid4()}",
             system_message=ANALYSIS_TEMPLATES.get(analysis_type, ANALYSIS_TEMPLATES["comprehensive"])
-        ).with_model("anthropic", "claude-3-5-sonnet-20240620")
+        ).with_model("anthropic", "claude-3-5-sonnet-20241022")
         
         # Create analysis prompt
         prompt = f"""
@@ -178,7 +178,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
         try:
             import json
             result = json.loads(response)
-            result["ai_model_used"] = "claude-3-5-sonnet-20240620"
+            result["ai_model_used"] = "claude-3-5-sonnet-20241022"
             return result
         except json.JSONDecodeError:
             # Fallback if response isn't valid JSON
@@ -188,7 +188,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
                 "security_score": 75,
                 "code_quality_score": 80,
                 "summary": response[:200] + "..." if len(response) > 200 else response,
-                "ai_model_used": "claude-3-5-sonnet-20240620"
+                "ai_model_used": "claude-3-5-sonnet-20241022"
             }
             
     except Exception as e:
@@ -199,7 +199,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             "security_score": 0,
             "code_quality_score": 0,
             "summary": f"Analysis failed due to: {str(e)}",
-            "ai_model_used": "claude-3-5-sonnet-20240620"
+            "ai_model_used": "claude-3-5-sonnet-20241022"
         }
 
 # API Routes
@@ -261,7 +261,7 @@ async def analyze_uploaded_file(
             security_score=analysis_result.get("security_score", 0),
             code_quality_score=analysis_result.get("code_quality_score", 0),
             summary=analysis_result.get("summary", "Analysis completed"),
-            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20240620")
+            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241022")
         )
         
         # Save to database
@@ -299,7 +299,7 @@ async def analyze_text_code(request: AnalysisRequest):
             security_score=analysis_result.get("security_score", 0),
             code_quality_score=analysis_result.get("code_quality_score", 0),
             summary=analysis_result.get("summary", "Analysis completed"),
-            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20240620")
+            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241022")
         )
         
         # Save to database
