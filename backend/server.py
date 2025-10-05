@@ -261,7 +261,7 @@ async def analyze_uploaded_file(
             security_score=analysis_result.get("security_score", 0),
             code_quality_score=analysis_result.get("code_quality_score", 0),
             summary=analysis_result.get("summary", "Analysis completed"),
-            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241022")
+            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241220")
         )
         
         # Save to database
@@ -299,7 +299,7 @@ async def analyze_text_code(request: AnalysisRequest):
             security_score=analysis_result.get("security_score", 0),
             code_quality_score=analysis_result.get("code_quality_score", 0),
             summary=analysis_result.get("summary", "Analysis completed"),
-            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241022")
+            ai_model_used=analysis_result.get("ai_model_used", "claude-3-5-sonnet-20241220")
         )
         
         # Save to database
