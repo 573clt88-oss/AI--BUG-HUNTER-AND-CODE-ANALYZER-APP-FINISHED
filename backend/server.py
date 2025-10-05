@@ -70,6 +70,7 @@ class AnalysisHistory(BaseModel):
 
 # AI Configuration
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
 
 # Analysis Templates
 ANALYSIS_TEMPLATES = {
