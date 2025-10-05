@@ -197,7 +197,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             "security_score": 0,
             "code_quality_score": 0,
             "summary": f"Analysis failed due to: {str(e)}",
-            "ai_model_used": "gpt-4o-mini"
+            "ai_model_used": "claude-3-5-sonnet-20241022"
         }
 
 # API Routes
