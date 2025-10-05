@@ -390,12 +390,16 @@ async def get_analysis_types():
 # Include router
 app.include_router(api_router)
 
-# CORS
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://debug-mission-2.preview.emergentagent.com",
+        "https://*.preview.emergentagent.com"
+    ],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
