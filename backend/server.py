@@ -188,7 +188,7 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
                 "security_score": 75,
                 "code_quality_score": 80,
                 "summary": response[:200] + "..." if len(response) > 200 else response,
-                "ai_model_used": "claude-3-5-sonnet-20241022"
+                "ai_model_used": "claude-3-5-sonnet-20241220"
             }
             
     except Exception as e:
