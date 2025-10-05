@@ -151,9 +151,10 @@ ANALYSIS_TEMPLATES = {
 async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str) -> Dict[str, Any]:
     """Analyze code using AI"""
     try:
-        # Initialize LLM chat
+        # Initialize LLM chat - use personal Anthropic key for reliability
+        api_key_to_use = ANTHROPIC_API_KEY if ANTHROPIC_API_KEY else EMERGENT_LLM_KEY
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
+            api_key=api_key_to_use,
             session_id=f"analysis_{uuid.uuid4()}",
             system_message=ANALYSIS_TEMPLATES.get(analysis_type, ANALYSIS_TEMPLATES["comprehensive"])
         ).with_model("anthropic", "claude-3-5-sonnet-20241022")
