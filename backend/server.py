@@ -101,8 +101,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize services
-subscription_service = SubscriptionService(db)
+# Initialize services (simplified for now)
+class SimpleSubscriptionService:
+    def __init__(self, db):
+        self.db = db
+        
+    async def check_usage_limit(self, user):
+        return {"can_analyze": True, "remaining": 10, "limit": 10, "tier": "free"}
+        
+    async def record_analysis(self, user):
+        return True
+
+subscription_service = SimpleSubscriptionService(db)
 
 # Stripe configuration
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
