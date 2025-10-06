@@ -72,7 +72,7 @@ def test_stripe_price_ids():
             price = stripe.Price.retrieve(price_id)
             print(f"✅ {tier.title()} tier: Price ID valid (${price.unit_amount/100}/month)")
             valid_prices.append(tier)
-        except stripe._error.InvalidRequestError as e:
+        except stripe.InvalidRequestError as e:
             print(f"❌ {tier.title()} tier: Invalid Price ID - {e}")
             invalid_prices.append(tier)
         except Exception as e:
