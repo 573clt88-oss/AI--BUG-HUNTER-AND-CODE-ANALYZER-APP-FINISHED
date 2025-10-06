@@ -37,21 +37,29 @@ class ComprehensiveBackendTester:
         print(f"Testing backend at: {self.api_url}")
         print("=" * 80)
     
-    def log_test(self, test_name: str, status: str, details: str = "", response_data: Dict = None):
+    def log_test(self, test_name: str, status: str, details: str = "", response_data: Dict = None, is_critical: bool = False):
         """Log test results"""
         result = {
             "test": test_name,
             "status": status,
             "details": details,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "critical": is_critical
         }
         if response_data:
             result["response"] = response_data
         
         self.test_results.append(result)
         
+        # Track deployment blockers and critical issues
+        if status == "FAIL" and is_critical:
+            self.deployment_blockers.append(f"{test_name}: {details}")
+        elif status == "FAIL":
+            self.critical_issues.append(f"{test_name}: {details}")
+        
         status_emoji = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
-        print(f"{status_emoji} {test_name}: {status}")
+        critical_marker = " 🚨 DEPLOYMENT BLOCKER" if status == "FAIL" and is_critical else ""
+        print(f"{status_emoji} {test_name}: {status}{critical_marker}")
         if details:
             print(f"   Details: {details}")
         if response_data and status == "FAIL":
