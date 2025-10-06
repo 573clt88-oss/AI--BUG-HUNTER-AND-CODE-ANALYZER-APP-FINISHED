@@ -371,9 +371,27 @@ async def get_subscription_plans():
     return {"plans": list(SUBSCRIPTION_PLANS.values())}
 
 @api_router.post("/subscription/checkout")
-async def create_subscription_checkout(request: Request):
-    """Create Stripe checkout session for Pro subscription"""
+async def create_subscription_checkout(
+    request: Request,
+    tier: str = Form(...),
+    user_email: str = Form(default="demo@example.com")
+):
+    """Create Stripe checkout session for any subscription tier"""
     try:
+        # Validate tier
+        if tier not in ["basic", "pro", "enterprise"]:
+            raise HTTPException(status_code=400, detail="Invalid subscription tier")
+        
+        # Get price ID for the tier
+        price_id = STRIPE_PRICE_IDS.get(tier)
+        if not price_id or "placeholder" in price_id:
+            raise HTTPException(status_code=400, detail=f"Price ID not configured for {tier} tier")
+        
+        # Get plan details
+        plan_details = SUBSCRIPTION_PLANS.get(tier)
+        if not plan_details:
+            raise HTTPException(status_code=400, detail=f"Plan details not found for {tier}")
+        
         host_url = str(request.base_url).rstrip('/')
         webhook_url = f"{host_url}/api/webhook/stripe"
         stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
@@ -382,11 +400,15 @@ async def create_subscription_checkout(request: Request):
         cancel_url = f"{host_url}/subscription/cancel"
         
         checkout_request = CheckoutSessionRequest(
-            stripe_price_id=STRIPE_PRO_PRICE_ID,
+            stripe_price_id=price_id,
             quantity=1,
             success_url=success_url,
             cancel_url=cancel_url,
-            metadata={"tier": "pro", "user": "demo"}
+            metadata={
+                "tier": tier, 
+                "user_email": user_email,
+                "plan_name": plan_details["name"]
+            }
         )
         
         session = await stripe_checkout.create_checkout_session(checkout_request)
@@ -394,13 +416,20 @@ async def create_subscription_checkout(request: Request):
         # Save payment record
         payment = PaymentTransaction(
             stripe_session_id=session.session_id,
-            amount=19.0,
+            amount=plan_details["monthly_price"],
             currency="usd"
         )
         await db.payment_transactions.insert_one(payment.dict())
         
-        return session
+        return {
+            "session": session,
+            "tier": tier,
+            "plan_name": plan_details["name"],
+            "monthly_price": plan_details["monthly_price"]
+        }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Checkout error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Checkout failed: {str(e)}")
