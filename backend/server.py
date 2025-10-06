@@ -618,6 +618,17 @@ async def get_analysis_result(result_id: str):
         logger.error(f"Result retrieval error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/analysis/history")
+async def get_analysis_history():
+    """Get user's analysis history"""
+    try:
+        # Get recent analyses (limit to 10 for performance)
+        analyses = await db.analysis_results.find({}).sort("timestamp", -1).limit(10).to_list(length=10)
+        return {"analyses": analyses}
+    except Exception as e:
+        logger.error(f"Analysis history error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/supported-languages")
 async def get_supported_languages():
     """Get supported languages"""
