@@ -621,12 +621,7 @@ async def get_analysis_result(result_id: str):
 @api_router.get("/analysis/history")
 async def get_analysis_history():
     """Get user's analysis history"""
-    try:
-        # Return empty list for now - will implement proper history later
-        return {"analyses": []}
-    except Exception as e:
-        logger.error(f"Analysis history error: {str(e)}")
-        return {"analyses": []}
+    return {"analyses": []}
 
 @api_router.get("/supported-languages")
 async def get_supported_languages():
