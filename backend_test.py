@@ -66,6 +66,8 @@ class ComprehensiveBackendTester:
             print(f"   Response: {json.dumps(response_data, indent=2)}")
         print()
     
+    # ========== CORE APPLICATION HEALTH TESTS ==========
+    
     def test_api_root(self):
         """Test basic API connectivity"""
         try:
