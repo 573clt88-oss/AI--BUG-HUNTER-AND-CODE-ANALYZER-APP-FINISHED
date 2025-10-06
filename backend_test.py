@@ -869,8 +869,9 @@ eval(user_input)
         # ========== STRIPE PAYMENT LINKS INTEGRATION ==========
         print("\n💰 STRIPE PAYMENT LINKS INTEGRATION")
         print("-" * 40)
-        self.test_stripe_price_ids_configuration()
+        self.test_stripe_payment_links_configuration()
         self.test_stripe_payment_links_checkout()
+        self.test_stripe_price_ids_configuration()
         
         # ========== CODE ANALYSIS ENGINE ==========
         print("\n🔍 CODE ANALYSIS ENGINE")
