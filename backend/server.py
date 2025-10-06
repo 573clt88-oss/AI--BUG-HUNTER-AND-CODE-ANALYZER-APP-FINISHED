@@ -613,6 +613,8 @@ async def send_test_email(
             "message": f"Test {email_type} email scheduled for {email}"
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTPException as-is
     except Exception as e:
         logger.error(f"Test email error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send test email: {str(e)}")
