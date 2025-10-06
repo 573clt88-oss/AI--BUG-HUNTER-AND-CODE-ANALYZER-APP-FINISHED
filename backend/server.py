@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, File, UploadFile, HTTPException, Form, Depends, Request
+from fastapi import FastAPI, APIRouter, File, UploadFile, HTTPException, Form, Depends, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -14,6 +14,7 @@ import asyncio
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 from enum import Enum
+from mailchimp_service import get_mailchimp_service, MailChimpService
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
