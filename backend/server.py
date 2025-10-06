@@ -92,25 +92,53 @@ SUBSCRIPTION_PLANS = {
         "id": "free",
         "name": "Free Tier",
         "monthly_price": 0.0,
-        "monthly_limit": 10,
+        "monthly_limit": 5,
         "features": [
-            "10 analyses per month",
+            "5 analyses per month",
             "Basic error detection", 
             "Public code analysis only",
-            "Email support"
+            "Community support"
+        ]
+    },
+    SubscriptionTier.BASIC: {
+        "id": "basic",
+        "name": "Basic Tier",
+        "monthly_price": 9.0,
+        "monthly_limit": 50,
+        "features": [
+            "50 analyses per month",
+            "Advanced error detection",
+            "Private code analysis", 
+            "Email support",
+            "Export reports"
         ]
     },
     SubscriptionTier.PRO: {
         "id": "pro",
         "name": "Pro Tier", 
         "monthly_price": 19.0,
-        "monthly_limit": -1,
+        "monthly_limit": 200,
         "features": [
-            "Unlimited code analyses",
+            "200 analyses per month",
             "Advanced security scanning",
             "Private repository support",
             "Priority support",
-            "Detailed analytics"
+            "Detailed analytics",
+            "API access"
+        ]
+    },
+    SubscriptionTier.ENTERPRISE: {
+        "id": "enterprise",
+        "name": "Enterprise Tier",
+        "monthly_price": 49.0,
+        "monthly_limit": -1,
+        "features": [
+            "Unlimited analyses",
+            "Team collaboration",
+            "Custom integrations",
+            "White-label reports", 
+            "Dedicated support",
+            "SLA guarantee"
         ]
     }
 }
