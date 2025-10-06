@@ -159,56 +159,69 @@ export default function SubscriptionPage() {
           </Alert>
         )}
 
-        {/* Current Plan Info */}
-        <Card className="mb-8 bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Current Plan
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${isProUser ? 'bg-purple-600' : 'bg-slate-700'}`}>
-                  {isProUser ? <Crown className="w-6 h-6 text-white" /> : <Users className="w-6 h-6 text-slate-400" />}
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white">{currentPlan.name}</h3>
-                  <p className="text-slate-400">
-                    {isProUser ? '$19/month' : 'Free'} • 
-                    {isTrialing ? ` Trial (${daysLeftInTrial} days left)` : 
-                     user?.subscription?.status === 'cancelled' ? ' Cancelled (ends at period end)' : 
-                     ' Active'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {user?.subscription?.usage && (
-                  <div className="text-right">
-                    <div className="text-sm text-slate-400">This month</div>
-                    <div className="text-lg font-semibold text-white">
-                      {user.subscription.usage.used}
-                      {user.subscription.usage.limit === -1 ? ' analyses' : ` / ${user.subscription.usage.limit}`}
-                    </div>
+        {/* Current Plan Info - Only show if user is logged in */}
+        {user && (
+          <Card className="mb-8 bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Current Plan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg ${isProUser ? 'bg-purple-600' : 'bg-slate-700'}`}>
+                    {isProUser ? <Crown className="w-6 h-6 text-white" /> : <Users className="w-6 h-6 text-slate-400" />}
                   </div>
-                )}
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">{currentPlan.name}</h3>
+                    <p className="text-slate-400">
+                      {isProUser ? '$19/month' : 'Free'} • 
+                      {isTrialing ? ` Trial (${daysLeftInTrial} days left)` : 
+                       user?.subscription?.status === 'cancelled' ? ' Cancelled (ends at period end)' : 
+                       ' Active'}
+                    </p>
+                  </div>
+                </div>
                 
-                {isProUser && user?.subscription?.status !== 'cancelled' && (
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelSubscription}
-                    disabled={loading}
-                    className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                  >
-                    Cancel Plan
-                  </Button>
-                )}
+                <div className="flex items-center gap-3">
+                  {user?.subscription?.usage && (
+                    <div className="text-right">
+                      <div className="text-sm text-slate-400">This month</div>
+                      <div className="text-lg font-semibold text-white">
+                        {user.subscription.usage.used}
+                        {user.subscription.usage.limit === -1 ? ' analyses' : ` / ${user.subscription.usage.limit}`}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {isProUser && user?.subscription?.status !== 'cancelled' && (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelSubscription}
+                      disabled={loading}
+                      className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                    >
+                      Cancel Plan
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Guest Message */}
+        {!user && (
+          <Alert className="mb-8 bg-blue-900/50 border-blue-500">
+            <Users className="h-4 w-4" />
+            <AlertDescription className="text-blue-200">
+              <strong>Ready to get started?</strong> Choose a plan below to unlock advanced code analysis features. 
+              You can register an account during checkout.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Pricing Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
