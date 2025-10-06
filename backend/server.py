@@ -16,9 +16,9 @@ from emergentintegrations.payments.stripe.checkout import StripeCheckout, Checko
 from enum import Enum
 from mailchimp_service import get_mailchimp_service, MailChimpService
 
-# Load environment variables
+# Load environment variables - override system env with .env file
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=True)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
