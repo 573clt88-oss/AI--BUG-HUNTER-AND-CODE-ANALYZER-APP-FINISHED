@@ -30,9 +30,12 @@ class ComprehensiveBackendTester:
         
         self.api_url = f"{self.base_url}/api"
         self.test_results = []
+        self.deployment_blockers = []
+        self.critical_issues = []
         
+        print(f"🚀 DEPLOYMENT READINESS TESTING")
         print(f"Testing backend at: {self.api_url}")
-        print("=" * 60)
+        print("=" * 80)
     
     def log_test(self, test_name: str, status: str, details: str = "", response_data: Dict = None):
         """Log test results"""
