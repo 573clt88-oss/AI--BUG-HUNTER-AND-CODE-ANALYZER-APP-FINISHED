@@ -35,10 +35,10 @@ def test_stripe_api_key():
         
         return True
         
-    except stripe._error.AuthenticationError as e:
+    except stripe.AuthenticationError as e:
         print(f"❌ Stripe API Key Authentication Failed: {e}")
         return False
-    except stripe._error.PermissionError as e:
+    except stripe.PermissionError as e:
         print(f"❌ Stripe API Key Permission Error: {e}")
         return False
     except Exception as e:
