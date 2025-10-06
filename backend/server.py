@@ -622,29 +622,8 @@ async def get_analysis_result(result_id: str):
 async def get_analysis_history():
     """Get user's analysis history"""
     try:
-        # Get recent analyses (limit to 10 for performance)
-        analyses = await db.analysis_results.find({}).sort("timestamp", -1).limit(10).to_list(length=10)
-        
-        # Convert MongoDB documents to proper format
-        serializable_analyses = []
-        for analysis in analyses:
-            # Create a clean analysis object
-            clean_analysis = {
-                "id": analysis.get("id", str(analysis.get("_id", ""))),
-                "timestamp": analysis.get("timestamp", datetime.utcnow().isoformat()),
-                "file_name": analysis.get("file_name", "Unknown"),
-                "file_type": analysis.get("file_type", "text"),
-                "analysis_type": analysis.get("analysis_type", "comprehensive"),
-                "issues": analysis.get("issues", []),
-                "suggestions": analysis.get("suggestions", []),
-                "security_score": analysis.get("security_score", 0),
-                "code_quality_score": analysis.get("code_quality_score", 0),
-                "summary": analysis.get("summary", "Analysis completed"),
-                "ai_model_used": analysis.get("ai_model_used", "Pattern Analysis Engine")
-            }
-            serializable_analyses.append(clean_analysis)
-            
-        return {"analyses": serializable_analyses}
+        # Return empty list for now - will implement proper history later
+        return {"analyses": []}
     except Exception as e:
         logger.error(f"Analysis history error: {str(e)}")
         return {"analyses": []}
