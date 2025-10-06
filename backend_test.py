@@ -478,8 +478,44 @@ class ComprehensiveBackendTester:
                 self.log_test(f"Stripe Payment Link - {tier.title()} Tier", "FAIL", 
                             f"Connection error: {str(e)}", is_critical=True)
     
+    def test_stripe_payment_links_configuration(self):
+        """Test Stripe Payment Links configuration"""
+        try:
+            # Check environment variables for Payment Links
+            payment_links = {
+                "basic": os.environ.get('STRIPE_BASIC_PAYMENT_LINK'),
+                "pro": os.environ.get('STRIPE_PRO_PAYMENT_LINK'),
+                "enterprise": os.environ.get('STRIPE_ENTERPRISE_PAYMENT_LINK')
+            }
+            
+            configured_links = []
+            missing_links = []
+            invalid_links = []
+            
+            for tier, payment_link in payment_links.items():
+                if not payment_link:
+                    missing_links.append(tier)
+                elif not payment_link.startswith("https://buy.stripe.com/"):
+                    invalid_links.append(f"{tier}={payment_link}")
+                else:
+                    configured_links.append(f"{tier}={payment_link[:30]}...")
+            
+            if missing_links:
+                self.log_test("Stripe Payment Links Configuration", "FAIL", 
+                            f"Missing Payment Links for: {', '.join(missing_links)}", is_critical=True)
+            elif invalid_links:
+                self.log_test("Stripe Payment Links Configuration", "FAIL", 
+                            f"Invalid Payment Links detected: {', '.join(invalid_links)}", is_critical=True)
+            else:
+                self.log_test("Stripe Payment Links Configuration", "PASS", 
+                            f"All Payment Links configured: {len(configured_links)} tiers", is_critical=True)
+                
+        except Exception as e:
+            self.log_test("Stripe Payment Links Configuration", "FAIL", 
+                        f"Configuration check error: {str(e)}", is_critical=True)
+    
     def test_stripe_price_ids_configuration(self):
-        """Test Stripe Price IDs configuration"""
+        """Test Stripe Price IDs configuration (legacy support)"""
         try:
             # Check environment variables for Price IDs
             price_ids = {
@@ -501,18 +537,18 @@ class ComprehensiveBackendTester:
                     configured_ids.append(f"{tier}={price_id}")
             
             if missing_ids:
-                self.log_test("Stripe Price IDs Configuration", "FAIL", 
-                            f"Missing Price IDs for: {', '.join(missing_ids)}", is_critical=True)
+                self.log_test("Stripe Price IDs Configuration (Legacy)", "WARN", 
+                            f"Missing Price IDs for: {', '.join(missing_ids)} (Using Payment Links instead)")
             elif placeholder_ids:
-                self.log_test("Stripe Price IDs Configuration", "FAIL", 
-                            f"Placeholder Price IDs detected: {', '.join(placeholder_ids)}", is_critical=True)
+                self.log_test("Stripe Price IDs Configuration (Legacy)", "WARN", 
+                            f"Placeholder Price IDs detected: {', '.join(placeholder_ids)} (Using Payment Links instead)")
             else:
-                self.log_test("Stripe Price IDs Configuration", "PASS", 
-                            f"All Price IDs configured: {len(configured_ids)} tiers", is_critical=True)
+                self.log_test("Stripe Price IDs Configuration (Legacy)", "PASS", 
+                            f"All Price IDs configured: {len(configured_ids)} tiers (Legacy support)")
                 
         except Exception as e:
-            self.log_test("Stripe Price IDs Configuration", "FAIL", 
-                        f"Configuration check error: {str(e)}", is_critical=True)
+            self.log_test("Stripe Price IDs Configuration (Legacy)", "WARN", 
+                        f"Configuration check error: {str(e)} (Using Payment Links instead)")
     
     # ========== CODE ANALYSIS ENGINE TESTS ==========
     
