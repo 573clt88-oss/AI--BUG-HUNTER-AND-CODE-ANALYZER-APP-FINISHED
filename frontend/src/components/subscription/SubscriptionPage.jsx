@@ -70,24 +70,26 @@ export default function SubscriptionPage() {
   };
 
   const handleUpgrade = async (planId) => {
-    if (planId === 'free' || user?.subscription?.tier === planId) return;
-
+    if (loading) return;
+    
     setLoading(true);
     setError('');
-
+    
     try {
-      // Create Stripe checkout session
-      const response = await axios.post(`${BACKEND_URL}/api/subscription/checkout`, {
-        tier: planId
-      });
-
-      if (response.data.url) {
-        // Redirect to Stripe checkout
-        window.location.href = response.data.url;
+      const userEmail = user?.email || 'guest@example.com';
+      const formData = new FormData();
+      formData.append('tier', planId);
+      formData.append('user_email', userEmail);
+      
+      const response = await axios.post(`${BACKEND_URL}/api/subscription/checkout`, formData);
+      
+      if (response.data.payment_link) {
+        // Redirect to Stripe payment link
+        window.open(response.data.payment_link, '_blank');
       }
     } catch (error) {
       console.error('Upgrade error:', error);
-      setError(error.response?.data?.detail || 'Failed to start upgrade process');
+      setError('Failed to start upgrade process. Please try again.');
     } finally {
       setLoading(false);
     }
