@@ -834,47 +834,111 @@ eval(user_input)
         # Print comprehensive summary
         self.print_deployment_summary()
     
-    def print_summary(self):
-        """Print test summary"""
-        print("=" * 60)
-        print("TEST SUMMARY")
-        print("=" * 60)
+    def print_deployment_summary(self):
+        """Print comprehensive deployment readiness summary"""
+        print("\n" + "=" * 80)
+        print("🚀 DEPLOYMENT READINESS ASSESSMENT")
+        print("=" * 80)
         
         total_tests = len(self.test_results)
         passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
         failed_tests = len([r for r in self.test_results if r["status"] == "FAIL"])
         warning_tests = len([r for r in self.test_results if r["status"] == "WARN"])
+        critical_tests = len([r for r in self.test_results if r.get("critical", False)])
+        critical_failures = len([r for r in self.test_results if r["status"] == "FAIL" and r.get("critical", False)])
         
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"⚠️  Warnings: {warning_tests}")
+        print(f"📊 TEST STATISTICS:")
+        print(f"   Total Tests: {total_tests}")
+        print(f"   ✅ Passed: {passed_tests}")
+        print(f"   ❌ Failed: {failed_tests}")
+        print(f"   ⚠️  Warnings: {warning_tests}")
+        print(f"   🚨 Critical Tests: {critical_tests}")
+        print(f"   🚨 Critical Failures: {critical_failures}")
         print()
         
+        # Deployment Blockers
+        if self.deployment_blockers:
+            print("🚨 DEPLOYMENT BLOCKERS (MUST FIX BEFORE DEPLOYMENT):")
+            for blocker in self.deployment_blockers:
+                print(f"   ❌ {blocker}")
+            print()
+        
+        # Critical Issues
+        if self.critical_issues:
+            print("⚠️  CRITICAL ISSUES (SHOULD FIX BEFORE DEPLOYMENT):")
+            for issue in self.critical_issues:
+                print(f"   ❌ {issue}")
+            print()
+        
+        # Failed Tests Detail
         if failed_tests > 0:
-            print("FAILED TESTS:")
+            print("❌ FAILED TESTS DETAIL:")
             for result in self.test_results:
                 if result["status"] == "FAIL":
-                    print(f"❌ {result['test']}: {result['details']}")
+                    critical_marker = " 🚨" if result.get("critical", False) else ""
+                    print(f"   ❌ {result['test']}{critical_marker}: {result['details']}")
             print()
         
+        # Warnings
         if warning_tests > 0:
-            print("WARNINGS:")
+            print("⚠️  WARNINGS:")
             for result in self.test_results:
                 if result["status"] == "WARN":
-                    print(f"⚠️  {result['test']}: {result['details']}")
+                    print(f"   ⚠️  {result['test']}: {result['details']}")
             print()
         
-        # Overall status
-        if failed_tests == 0:
-            if warning_tests == 0:
-                print("🎉 ALL TESTS PASSED!")
+        # Deployment Readiness Decision
+        print("🎯 DEPLOYMENT READINESS DECISION:")
+        if len(self.deployment_blockers) == 0:
+            if critical_failures == 0:
+                if failed_tests == 0:
+                    if warning_tests == 0:
+                        print("   🟢 READY FOR DEPLOYMENT - All systems operational!")
+                        deployment_status = "READY"
+                    else:
+                        print("   🟡 READY FOR DEPLOYMENT - Minor warnings present but not blocking")
+                        deployment_status = "READY_WITH_WARNINGS"
+                else:
+                    print("   🟡 CONDITIONALLY READY - Non-critical failures present")
+                    deployment_status = "CONDITIONALLY_READY"
             else:
-                print("✅ All critical tests passed (some warnings)")
+                print("   🔴 NOT READY FOR DEPLOYMENT - Critical system failures detected")
+                deployment_status = "NOT_READY"
         else:
-            print("❌ Some tests failed - review above for details")
+            print("   🔴 DEPLOYMENT BLOCKED - Critical deployment blockers must be resolved")
+            deployment_status = "BLOCKED"
         
-        print("=" * 60)
+        print()
+        print("📋 DEPLOYMENT RECOMMENDATIONS:")
+        
+        if deployment_status == "READY":
+            print("   ✅ All systems are operational and ready for production deployment")
+            print("   ✅ All critical functionality is working correctly")
+            print("   ✅ No deployment blockers detected")
+            
+        elif deployment_status == "READY_WITH_WARNINGS":
+            print("   ✅ Core systems are operational and ready for deployment")
+            print("   ⚠️  Address warnings when possible to improve system reliability")
+            print("   ✅ No critical issues blocking deployment")
+            
+        elif deployment_status == "CONDITIONALLY_READY":
+            print("   ⚠️  Core systems are working but some non-critical features have issues")
+            print("   ⚠️  Consider fixing failed tests before deployment for better user experience")
+            print("   ✅ No critical deployment blockers present")
+            
+        elif deployment_status == "NOT_READY":
+            print("   ❌ Critical system failures detected that will impact user experience")
+            print("   ❌ Fix all critical failures before attempting deployment")
+            print("   ⚠️  Review and test all core functionality")
+            
+        else:  # BLOCKED
+            print("   🚨 DEPLOYMENT BLOCKED - Critical infrastructure issues detected")
+            print("   🚨 Resolve all deployment blockers before proceeding")
+            print("   🚨 These issues will prevent the application from functioning properly")
+        
+        print("\n" + "=" * 80)
+        
+        return deployment_status
 
 if __name__ == "__main__":
     tester = MailChimpBackendTester()
