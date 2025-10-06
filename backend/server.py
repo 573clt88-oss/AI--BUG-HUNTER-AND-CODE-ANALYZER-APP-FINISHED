@@ -145,7 +145,11 @@ SUBSCRIPTION_PLANS = {
 
 # Configuration
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
-STRIPE_PRO_PRICE_ID = os.environ.get('STRIPE_PRO_PRICE_ID', 'price_placeholder')
+STRIPE_PRICE_IDS = {
+    "basic": os.environ.get('STRIPE_BASIC_PRICE_ID', 'price_placeholder_basic'),
+    "pro": os.environ.get('STRIPE_PRO_PRICE_ID', 'price_placeholder_pro'), 
+    "enterprise": os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_placeholder_enterprise')
+}
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
 
 # Analysis template
