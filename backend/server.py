@@ -370,6 +370,30 @@ async def get_subscription_plans():
     """Get available subscription plans"""
     return {"plans": list(SUBSCRIPTION_PLANS.values())}
 
+@api_router.get("/subscription/tiers")
+async def get_available_tiers():
+    """Get subscription tiers available for checkout"""
+    available_tiers = []
+    
+    for tier_key, tier_data in SUBSCRIPTION_PLANS.items():
+        if tier_key == SubscriptionTier.FREE:
+            continue  # Skip free tier for checkout
+            
+        price_id = STRIPE_PRICE_IDS.get(tier_key.value, "")
+        is_available = price_id and "placeholder" not in price_id
+        
+        available_tiers.append({
+            "id": tier_key.value,
+            "name": tier_data["name"],
+            "price": tier_data["monthly_price"],
+            "features": tier_data["features"],
+            "limit": tier_data["monthly_limit"],
+            "available_for_purchase": is_available,
+            "stripe_configured": is_available
+        })
+    
+    return {"tiers": available_tiers}
+
 @api_router.post("/subscription/checkout")
 async def create_subscription_checkout(
     request: Request,
