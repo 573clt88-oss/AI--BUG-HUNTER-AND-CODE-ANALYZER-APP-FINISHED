@@ -225,6 +225,25 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             "ai_model_used": "Pattern Analysis Engine (Demo Mode)"
         }
 
+# Background Tasks
+async def send_welcome_email_task(email: str, name: str, plan: str):
+    """Background task to send welcome email via MailChimp"""
+    try:
+        mailchimp = get_mailchimp_service()
+        result = mailchimp.send_welcome_email(email, name, plan)
+        logger.info(f"Welcome email task completed for {email}: {result['status']}")
+    except Exception as e:
+        logger.error(f"Welcome email task failed for {email}: {str(e)}")
+
+async def send_subscription_email_task(email: str, name: str, event_type: str, subscription_data: dict):
+    """Background task to send subscription notification emails"""
+    try:
+        mailchimp = get_mailchimp_service()
+        result = await mailchimp.send_subscription_notification(email, name, event_type, subscription_data)
+        logger.info(f"Subscription {event_type} email sent to {email}: {result['status']}")
+    except Exception as e:
+        logger.error(f"Subscription email task failed for {email}: {str(e)}")
+
 # Routes
 @api_router.get("/")
 async def root():
