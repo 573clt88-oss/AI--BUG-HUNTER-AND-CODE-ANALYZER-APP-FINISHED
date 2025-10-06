@@ -222,21 +222,47 @@ processData(data) {
     }, isRealtime ? 100 : 300);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, isRealtime ? 500 : 2000));
+      // Call real backend API
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${BACKEND_URL}/api/analyze/text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file_content: code,
+          file_type: language,
+          analysis_type: analysisType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.status} ${response.statusText}`);
+      }
+
+      const analysisResult = await response.json();
       
-      // Set mock results (in real app, this would be API response)
       setAnalysisResults({
-        ...mockAnalysisResults,
-        timestamp: new Date().toISOString(),
-        file_type: language,
-        analysis_type: analysisType
+        ...analysisResult,
+        timestamp: new Date().toISOString()
       });
       
       setAnalysisProgress(100);
       
     } catch (error) {
       console.error('Analysis failed:', error);
+      
+      // Fallback to mock results if API fails
+      setAnalysisResults({
+        ...mockAnalysisResults,
+        timestamp: new Date().toISOString(),
+        file_type: language,
+        analysis_type: analysisType,
+        summary: `Analysis failed: ${error.message}. Showing demo results.`,
+        ai_model_used: "Demo Mode (API Error)"
+      });
+      
+      setAnalysisProgress(100);
     } finally {
       clearInterval(progressInterval);
       setIsAnalyzing(false);
