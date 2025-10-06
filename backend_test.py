@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for MailChimp Email Automation Integration
-Tests all MailChimp-related endpoints and functionality
+Comprehensive Backend Testing Suite for AI Bug Hunter SaaS Platform
+Deployment Readiness Testing covering all systems and integrations
 """
 
 import requests
@@ -11,11 +11,13 @@ import asyncio
 from typing import Dict, Any
 import os
 from dotenv import load_dotenv
+import tempfile
+from pathlib import Path
 
 # Load environment variables
 load_dotenv('/app/backend/.env')
 
-class MailChimpBackendTester:
+class ComprehensiveBackendTester:
     def __init__(self):
         # Get backend URL from frontend .env
         with open('/app/frontend/.env', 'r') as f:
