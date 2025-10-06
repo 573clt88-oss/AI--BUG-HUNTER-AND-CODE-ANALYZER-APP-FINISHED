@@ -611,7 +611,7 @@ async def get_analysis_result(result_id: str):
 @api_router.get("/analysis/history")
 async def get_analysis_history():
     """Get user's analysis history"""
-    return {"analyses": []}
+    return []
 
 @api_router.get("/supported-languages")
 async def get_supported_languages():
