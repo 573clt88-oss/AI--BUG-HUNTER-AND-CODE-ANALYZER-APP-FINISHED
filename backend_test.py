@@ -336,6 +336,447 @@ class ComprehensiveBackendTester:
             self.log_test("Error Handling - Missing Required Fields", "FAIL", 
                         f"Connection error: {str(e)}")
     
+    # ========== MULTI-TIER SUBSCRIPTION SYSTEM TESTS ==========
+    
+    def test_subscription_plans_endpoint(self):
+        """Test subscription plans endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/subscription/plans", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                plans = data.get("plans", [])
+                
+                if len(plans) == 4:  # Free, Basic, Pro, Enterprise
+                    plan_names = [plan.get("name", "") for plan in plans]
+                    expected_tiers = ["Free Tier", "Basic Tier", "Pro Tier", "Enterprise Tier"]
+                    
+                    if all(tier in plan_names for tier in expected_tiers):
+                        self.log_test("Subscription Plans Endpoint", "PASS", 
+                                    f"All 4 subscription tiers available: {', '.join(plan_names)}", is_critical=True)
+                    else:
+                        self.log_test("Subscription Plans Endpoint", "FAIL", 
+                                    f"Missing expected tiers. Found: {plan_names}", data, is_critical=True)
+                else:
+                    self.log_test("Subscription Plans Endpoint", "FAIL", 
+                                f"Expected 4 plans, found {len(plans)}", data, is_critical=True)
+            else:
+                self.log_test("Subscription Plans Endpoint", "FAIL", 
+                            f"HTTP {response.status_code}", {"status_code": response.status_code}, is_critical=True)
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Subscription Plans Endpoint", "FAIL", f"Connection error: {str(e)}", is_critical=True)
+    
+    def test_subscription_tiers_endpoint(self):
+        """Test subscription tiers endpoint with Stripe configuration"""
+        try:
+            response = requests.get(f"{self.api_url}/subscription/tiers", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                tiers = data.get("tiers", [])
+                
+                expected_tiers = ["basic", "pro", "enterprise"]
+                expected_prices = [9.0, 19.0, 49.0]
+                
+                found_tiers = [tier.get("id") for tier in tiers]
+                configured_tiers = [tier for tier in tiers if tier.get("stripe_configured", False)]
+                
+                if all(tier in found_tiers for tier in expected_tiers):
+                    if len(configured_tiers) == 3:
+                        self.log_test("Subscription Tiers Configuration", "PASS", 
+                                    f"All 3 paid tiers configured with Stripe: {[t['id'] for t in configured_tiers]}", is_critical=True)
+                    else:
+                        self.log_test("Subscription Tiers Configuration", "FAIL", 
+                                    f"Only {len(configured_tiers)}/3 tiers configured with Stripe", data, is_critical=True)
+                else:
+                    self.log_test("Subscription Tiers Configuration", "FAIL", 
+                                f"Missing expected tiers. Found: {found_tiers}", data, is_critical=True)
+            else:
+                self.log_test("Subscription Tiers Configuration", "FAIL", 
+                            f"HTTP {response.status_code}", {"status_code": response.status_code}, is_critical=True)
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Subscription Tiers Configuration", "FAIL", f"Connection error: {str(e)}", is_critical=True)
+    
+    # ========== STRIPE INTEGRATION TESTS ==========
+    
+    def test_stripe_checkout_sessions(self):
+        """Test Stripe checkout session creation for all tiers"""
+        tiers = ["basic", "pro", "enterprise"]
+        
+        for tier in tiers:
+            try:
+                checkout_data = {
+                    "tier": tier,
+                    "user_email": "deployment.test@example.com"
+                }
+                
+                response = requests.post(
+                    f"{self.api_url}/subscription/checkout",
+                    data=checkout_data,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    session = data.get("session", {})
+                    
+                    if session.get("session_id") and session.get("checkout_url"):
+                        self.log_test(f"Stripe Checkout - {tier.title()} Tier", "PASS", 
+                                    f"Checkout session created successfully (ID: {session['session_id'][:20]}...)", is_critical=True)
+                    else:
+                        self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
+                                    "Missing session_id or checkout_url", data, is_critical=True)
+                else:
+                    error_data = {}
+                    try:
+                        error_data = response.json()
+                    except:
+                        error_data = {"raw_response": response.text}
+                    
+                    self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
+                                f"HTTP {response.status_code}", error_data, is_critical=True)
+                    
+            except requests.exceptions.RequestException as e:
+                self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
+                            f"Connection error: {str(e)}", is_critical=True)
+    
+    def test_stripe_price_ids_configuration(self):
+        """Test Stripe Price IDs configuration"""
+        try:
+            # Check environment variables for Price IDs
+            price_ids = {
+                "basic": os.environ.get('STRIPE_BASIC_PRICE_ID'),
+                "pro": os.environ.get('STRIPE_PRO_PRICE_ID'),
+                "enterprise": os.environ.get('STRIPE_ENTERPRISE_PRICE_ID')
+            }
+            
+            configured_ids = []
+            missing_ids = []
+            placeholder_ids = []
+            
+            for tier, price_id in price_ids.items():
+                if not price_id:
+                    missing_ids.append(tier)
+                elif "placeholder" in price_id.lower():
+                    placeholder_ids.append(f"{tier}={price_id}")
+                else:
+                    configured_ids.append(f"{tier}={price_id}")
+            
+            if missing_ids:
+                self.log_test("Stripe Price IDs Configuration", "FAIL", 
+                            f"Missing Price IDs for: {', '.join(missing_ids)}", is_critical=True)
+            elif placeholder_ids:
+                self.log_test("Stripe Price IDs Configuration", "FAIL", 
+                            f"Placeholder Price IDs detected: {', '.join(placeholder_ids)}", is_critical=True)
+            else:
+                self.log_test("Stripe Price IDs Configuration", "PASS", 
+                            f"All Price IDs configured: {len(configured_ids)} tiers", is_critical=True)
+                
+        except Exception as e:
+            self.log_test("Stripe Price IDs Configuration", "FAIL", 
+                        f"Configuration check error: {str(e)}", is_critical=True)
+    
+    # ========== CODE ANALYSIS ENGINE TESTS ==========
+    
+    def test_code_analysis_upload(self):
+        """Test code analysis via file upload"""
+        try:
+            # Create a test Python file with security issues
+            test_code = '''
+import os
+password = input("Enter password: ")
+query = "SELECT * FROM users WHERE id = " + user_id
+eval(user_input)
+'''
+            
+            # Create temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+                f.write(test_code)
+                temp_file_path = f.name
+            
+            try:
+                with open(temp_file_path, 'rb') as f:
+                    files = {'file': ('test_security.py', f, 'text/plain')}
+                    data = {'analysis_type': 'comprehensive'}
+                    
+                    response = requests.post(
+                        f"{self.api_url}/analyze/upload",
+                        files=files,
+                        data=data,
+                        timeout=30
+                    )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    issues = result.get("issues", [])
+                    security_score = result.get("security_score", 0)
+                    
+                    if len(issues) >= 3 and security_score < 50:  # Should detect multiple security issues
+                        self.log_test("Code Analysis Engine - Upload", "PASS", 
+                                    f"Analysis working: {len(issues)} issues found, security score: {security_score}/100", is_critical=True)
+                    else:
+                        self.log_test("Code Analysis Engine - Upload", "WARN", 
+                                    f"Analysis may not be detecting issues properly: {len(issues)} issues, score: {security_score}")
+                else:
+                    error_data = {}
+                    try:
+                        error_data = response.json()
+                    except:
+                        error_data = {"raw_response": response.text}
+                    
+                    self.log_test("Code Analysis Engine - Upload", "FAIL", 
+                                f"HTTP {response.status_code}", error_data, is_critical=True)
+            finally:
+                # Clean up temp file
+                os.unlink(temp_file_path)
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Code Analysis Engine - Upload", "FAIL", 
+                        f"Connection error: {str(e)}", is_critical=True)
+        except Exception as e:
+            self.log_test("Code Analysis Engine - Upload", "FAIL", 
+                        f"Test setup error: {str(e)}", is_critical=True)
+    
+    def test_code_analysis_text(self):
+        """Test code analysis via text input"""
+        try:
+            test_data = {
+                "file_content": "while True:\n    print('infinite loop')\n    # no sleep or break",
+                "file_type": "python",
+                "analysis_type": "performance"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/analyze/text",
+                json=test_data,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                issues = result.get("issues", [])
+                summary = result.get("summary", "")
+                
+                if issues and "analysis" in summary.lower():
+                    self.log_test("Code Analysis Engine - Text", "PASS", 
+                                f"Text analysis working: {len(issues)} issues found", is_critical=True)
+                else:
+                    self.log_test("Code Analysis Engine - Text", "WARN", 
+                                f"Analysis completed but may not be working optimally: {summary}")
+            else:
+                error_data = {}
+                try:
+                    error_data = response.json()
+                except:
+                    error_data = {"raw_response": response.text}
+                
+                self.log_test("Code Analysis Engine - Text", "FAIL", 
+                            f"HTTP {response.status_code}", error_data, is_critical=True)
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Code Analysis Engine - Text", "FAIL", 
+                        f"Connection error: {str(e)}", is_critical=True)
+    
+    def test_supported_languages(self):
+        """Test supported languages endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/supported-languages", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                languages = data.get("languages", [])
+                
+                expected_languages = ["python", "javascript", "typescript", "java", "cpp"]
+                found_languages = [lang.get("type") for lang in languages]
+                
+                if all(lang in found_languages for lang in expected_languages):
+                    self.log_test("Supported Languages", "PASS", 
+                                f"{len(languages)} languages supported including major ones")
+                else:
+                    self.log_test("Supported Languages", "WARN", 
+                                f"Some expected languages missing. Found: {found_languages}")
+            else:
+                self.log_test("Supported Languages", "FAIL", 
+                            f"HTTP {response.status_code}", {"status_code": response.status_code})
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Supported Languages", "FAIL", f"Connection error: {str(e)}")
+    
+    # ========== AUTHENTICATION & USER MANAGEMENT TESTS ==========
+    
+    def test_user_authentication_flow(self):
+        """Test complete user authentication flow"""
+        test_email = "deployment.test@aibughunter.com"
+        test_name = "Deployment Test User"
+        
+        # Test registration
+        try:
+            registration_data = {
+                "email": test_email,
+                "name": test_name,
+                "plan": "free"
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/auth/register",
+                data=registration_data,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                user_id = data.get("user_id")
+                
+                if user_id and data.get("status") == "success":
+                    self.log_test("User Registration", "PASS", 
+                                f"User registered successfully (ID: {user_id[:8]}...)", is_critical=True)
+                    
+                    # Test login
+                    login_data = {
+                        "email": test_email,
+                        "password": "demo"
+                    }
+                    
+                    login_response = requests.post(
+                        f"{self.api_url}/auth/login",
+                        data=login_data,
+                        timeout=10
+                    )
+                    
+                    if login_response.status_code == 200:
+                        login_result = login_response.json()
+                        if login_result.get("status") == "success":
+                            self.log_test("User Login", "PASS", 
+                                        f"Login successful for registered user", is_critical=True)
+                        else:
+                            self.log_test("User Login", "FAIL", 
+                                        f"Login failed: {login_result}", is_critical=True)
+                    else:
+                        self.log_test("User Login", "FAIL", 
+                                    f"Login HTTP {login_response.status_code}", is_critical=True)
+                else:
+                    self.log_test("User Registration", "FAIL", 
+                                f"Registration failed: {data}", data, is_critical=True)
+            else:
+                error_data = {}
+                try:
+                    error_data = response.json()
+                except:
+                    error_data = {"raw_response": response.text}
+                
+                self.log_test("User Registration", "FAIL", 
+                            f"HTTP {response.status_code}", error_data, is_critical=True)
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("User Authentication Flow", "FAIL", 
+                        f"Connection error: {str(e)}", is_critical=True)
+    
+    # ========== PERFORMANCE & RELIABILITY TESTS ==========
+    
+    def test_api_response_times(self):
+        """Test API response times for critical endpoints"""
+        endpoints = [
+            ("/", "Root endpoint"),
+            ("/subscription/plans", "Subscription plans"),
+            ("/supported-languages", "Supported languages"),
+            ("/mailchimp/health", "MailChimp health")
+        ]
+        
+        slow_endpoints = []
+        
+        for endpoint, description in endpoints:
+            try:
+                start_time = time.time()
+                response = requests.get(f"{self.api_url}{endpoint}", timeout=10)
+                response_time = time.time() - start_time
+                
+                if response.status_code == 200:
+                    if response_time < 2.0:  # Under 2 seconds is acceptable
+                        self.log_test(f"Response Time - {description}", "PASS", 
+                                    f"Response time: {response_time:.3f}s")
+                    elif response_time < 5.0:  # Under 5 seconds is warning
+                        self.log_test(f"Response Time - {description}", "WARN", 
+                                    f"Slow response time: {response_time:.3f}s")
+                        slow_endpoints.append(f"{description}: {response_time:.3f}s")
+                    else:  # Over 5 seconds is failure
+                        self.log_test(f"Response Time - {description}", "FAIL", 
+                                    f"Very slow response time: {response_time:.3f}s")
+                        slow_endpoints.append(f"{description}: {response_time:.3f}s")
+                else:
+                    self.log_test(f"Response Time - {description}", "FAIL", 
+                                f"HTTP {response.status_code} in {response_time:.3f}s")
+                    
+            except requests.exceptions.RequestException as e:
+                self.log_test(f"Response Time - {description}", "FAIL", 
+                            f"Connection error: {str(e)}")
+        
+        if slow_endpoints:
+            self.log_test("Overall API Performance", "WARN", 
+                        f"Some endpoints are slow: {', '.join(slow_endpoints)}")
+        else:
+            self.log_test("Overall API Performance", "PASS", 
+                        "All tested endpoints respond within acceptable time limits")
+    
+    def test_concurrent_requests(self):
+        """Test handling of concurrent requests"""
+        try:
+            import threading
+            import queue
+            
+            results_queue = queue.Queue()
+            num_threads = 5
+            
+            def make_request():
+                try:
+                    response = requests.get(f"{self.api_url}/", timeout=10)
+                    results_queue.put(("success", response.status_code))
+                except Exception as e:
+                    results_queue.put(("error", str(e)))
+            
+            # Start concurrent requests
+            threads = []
+            start_time = time.time()
+            
+            for _ in range(num_threads):
+                thread = threading.Thread(target=make_request)
+                thread.start()
+                threads.append(thread)
+            
+            # Wait for all threads to complete
+            for thread in threads:
+                thread.join()
+            
+            total_time = time.time() - start_time
+            
+            # Collect results
+            successes = 0
+            errors = 0
+            
+            while not results_queue.empty():
+                result_type, result_data = results_queue.get()
+                if result_type == "success" and result_data == 200:
+                    successes += 1
+                else:
+                    errors += 1
+            
+            if successes == num_threads:
+                self.log_test("Concurrent Request Handling", "PASS", 
+                            f"All {num_threads} concurrent requests succeeded in {total_time:.3f}s")
+            elif successes > 0:
+                self.log_test("Concurrent Request Handling", "WARN", 
+                            f"{successes}/{num_threads} concurrent requests succeeded, {errors} failed")
+            else:
+                self.log_test("Concurrent Request Handling", "FAIL", 
+                            f"All {num_threads} concurrent requests failed", is_critical=True)
+                
+        except Exception as e:
+            self.log_test("Concurrent Request Handling", "FAIL", 
+                        f"Test setup error: {str(e)}")
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("Starting MailChimp Backend Integration Tests")
