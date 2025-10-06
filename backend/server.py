@@ -384,8 +384,8 @@ async def get_available_tiers():
         if tier_key == SubscriptionTier.FREE:
             continue  # Skip free tier for checkout
             
-        price_id = STRIPE_PRICE_IDS.get(tier_key.value, "")
-        is_available = price_id and "placeholder" not in price_id
+        payment_link = STRIPE_PAYMENT_LINKS.get(tier_key.value, "")
+        is_available = payment_link and "placeholder" not in payment_link and payment_link.startswith("https://buy.stripe.com/")
         
         available_tiers.append({
             "id": tier_key.value,
@@ -394,7 +394,8 @@ async def get_available_tiers():
             "features": tier_data["features"],
             "limit": tier_data["monthly_limit"],
             "available_for_purchase": is_available,
-            "stripe_configured": is_available
+            "payment_method": "stripe_payment_link" if is_available else "not_configured",
+            "payment_link": payment_link if is_available else None
         })
     
     return {"tiers": available_tiers}
