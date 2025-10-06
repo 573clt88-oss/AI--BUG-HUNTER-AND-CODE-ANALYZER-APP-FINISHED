@@ -413,9 +413,10 @@ class ComprehensiveBackendTester:
     
     # ========== STRIPE INTEGRATION TESTS ==========
     
-    def test_stripe_checkout_sessions(self):
-        """Test Stripe checkout session creation for all tiers"""
+    def test_stripe_payment_links_checkout(self):
+        """Test Stripe Payment Links checkout for all tiers"""
         tiers = ["basic", "pro", "enterprise"]
+        expected_prices = {"basic": 9.0, "pro": 19.0, "enterprise": 49.0}
         
         for tier in tiers:
             try:
@@ -432,14 +433,37 @@ class ComprehensiveBackendTester:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    session = data.get("session", {})
                     
-                    if session.get("session_id") and session.get("checkout_url"):
-                        self.log_test(f"Stripe Checkout - {tier.title()} Tier", "PASS", 
-                                    f"Checkout session created successfully (ID: {session['session_id'][:20]}...)", is_critical=True)
+                    # Check for payment link response format
+                    payment_link = data.get("payment_link", "")
+                    redirect_url = data.get("redirect_url", "")
+                    tier_name = data.get("tier", "")
+                    monthly_price = data.get("monthly_price", 0)
+                    payment_id = data.get("payment_id", "")
+                    
+                    if (payment_link and payment_link.startswith("https://buy.stripe.com/") and
+                        redirect_url == payment_link and
+                        tier_name == tier and
+                        monthly_price == expected_prices[tier] and
+                        payment_id):
+                        
+                        self.log_test(f"Stripe Payment Link - {tier.title()} Tier", "PASS", 
+                                    f"Payment link generated successfully: ${monthly_price}/month, Payment ID: {payment_id[:8]}...", is_critical=True)
                     else:
-                        self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
-                                    "Missing session_id or checkout_url", data, is_critical=True)
+                        missing_fields = []
+                        if not payment_link or not payment_link.startswith("https://buy.stripe.com/"):
+                            missing_fields.append("valid payment_link")
+                        if redirect_url != payment_link:
+                            missing_fields.append("matching redirect_url")
+                        if tier_name != tier:
+                            missing_fields.append("correct tier")
+                        if monthly_price != expected_prices[tier]:
+                            missing_fields.append("correct price")
+                        if not payment_id:
+                            missing_fields.append("payment_id")
+                        
+                        self.log_test(f"Stripe Payment Link - {tier.title()} Tier", "FAIL", 
+                                    f"Invalid response format. Missing: {', '.join(missing_fields)}", data, is_critical=True)
                 else:
                     error_data = {}
                     try:
@@ -447,11 +471,11 @@ class ComprehensiveBackendTester:
                     except:
                         error_data = {"raw_response": response.text}
                     
-                    self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
+                    self.log_test(f"Stripe Payment Link - {tier.title()} Tier", "FAIL", 
                                 f"HTTP {response.status_code}", error_data, is_critical=True)
                     
             except requests.exceptions.RequestException as e:
-                self.log_test(f"Stripe Checkout - {tier.title()} Tier", "FAIL", 
+                self.log_test(f"Stripe Payment Link - {tier.title()} Tier", "FAIL", 
                             f"Connection error: {str(e)}", is_critical=True)
     
     def test_stripe_price_ids_configuration(self):
