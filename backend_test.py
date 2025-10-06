@@ -368,7 +368,7 @@ class ComprehensiveBackendTester:
             self.log_test("Subscription Plans Endpoint", "FAIL", f"Connection error: {str(e)}", is_critical=True)
     
     def test_subscription_tiers_endpoint(self):
-        """Test subscription tiers endpoint with Stripe configuration"""
+        """Test subscription tiers endpoint with Stripe Payment Links configuration"""
         try:
             response = requests.get(f"{self.api_url}/subscription/tiers", timeout=10)
             
@@ -380,24 +380,36 @@ class ComprehensiveBackendTester:
                 expected_prices = [9.0, 19.0, 49.0]
                 
                 found_tiers = [tier.get("id") for tier in tiers]
-                configured_tiers = [tier for tier in tiers if tier.get("stripe_configured", False)]
+                available_tiers = [tier for tier in tiers if tier.get("available_for_purchase", False)]
+                payment_link_tiers = [tier for tier in tiers if tier.get("payment_method") == "stripe_payment_link"]
                 
                 if all(tier in found_tiers for tier in expected_tiers):
-                    if len(configured_tiers) == 3:
-                        self.log_test("Subscription Tiers Configuration", "PASS", 
-                                    f"All 3 paid tiers configured with Stripe: {[t['id'] for t in configured_tiers]}", is_critical=True)
+                    if len(available_tiers) == 3 and len(payment_link_tiers) == 3:
+                        # Verify payment links are valid Stripe URLs
+                        valid_links = []
+                        for tier in tiers:
+                            payment_link = tier.get("payment_link", "")
+                            if payment_link and payment_link.startswith("https://buy.stripe.com/"):
+                                valid_links.append(tier["id"])
+                        
+                        if len(valid_links) == 3:
+                            self.log_test("Subscription Tiers with Payment Links", "PASS", 
+                                        f"All 3 tiers available with valid Stripe payment links: {valid_links}", is_critical=True)
+                        else:
+                            self.log_test("Subscription Tiers with Payment Links", "FAIL", 
+                                        f"Only {len(valid_links)}/3 tiers have valid payment links", data, is_critical=True)
                     else:
-                        self.log_test("Subscription Tiers Configuration", "FAIL", 
-                                    f"Only {len(configured_tiers)}/3 tiers configured with Stripe", data, is_critical=True)
+                        self.log_test("Subscription Tiers with Payment Links", "FAIL", 
+                                    f"Only {len(available_tiers)}/3 tiers available for purchase", data, is_critical=True)
                 else:
-                    self.log_test("Subscription Tiers Configuration", "FAIL", 
+                    self.log_test("Subscription Tiers with Payment Links", "FAIL", 
                                 f"Missing expected tiers. Found: {found_tiers}", data, is_critical=True)
             else:
-                self.log_test("Subscription Tiers Configuration", "FAIL", 
+                self.log_test("Subscription Tiers with Payment Links", "FAIL", 
                             f"HTTP {response.status_code}", {"status_code": response.status_code}, is_critical=True)
                 
         except requests.exceptions.RequestException as e:
-            self.log_test("Subscription Tiers Configuration", "FAIL", f"Connection error: {str(e)}", is_critical=True)
+            self.log_test("Subscription Tiers with Payment Links", "FAIL", f"Connection error: {str(e)}", is_critical=True)
     
     # ========== STRIPE INTEGRATION TESTS ==========
     
