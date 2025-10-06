@@ -941,5 +941,13 @@ eval(user_input)
         return deployment_status
 
 if __name__ == "__main__":
-    tester = MailChimpBackendTester()
-    tester.run_all_tests()
+    tester = ComprehensiveBackendTester()
+    deployment_status = tester.run_all_tests()
+    
+    # Exit with appropriate code for CI/CD systems
+    if deployment_status in ["READY", "READY_WITH_WARNINGS"]:
+        exit(0)  # Success
+    elif deployment_status == "CONDITIONALLY_READY":
+        exit(1)  # Warning
+    else:
+        exit(2)  # Failure
