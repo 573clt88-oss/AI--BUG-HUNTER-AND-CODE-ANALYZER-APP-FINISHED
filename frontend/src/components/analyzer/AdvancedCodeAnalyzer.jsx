@@ -507,10 +507,23 @@ processData(data) {
                       {isAnalyzing ? 'Analyzing...' : 'Analyze Code'}
                     </Button>
                     
-                    <Button variant="outline" className="border-slate-600 text-slate-300">
+                    <Button 
+                      variant="outline" 
+                      className="border-slate-600 text-slate-300"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isAnalyzing}
+                    >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload File
                     </Button>
+                    
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".py,.js,.ts,.java,.cpp,.c,.cs,.php,.rb,.go,.rs"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                    />
                   </div>
                   
                   {analysisResults && (
