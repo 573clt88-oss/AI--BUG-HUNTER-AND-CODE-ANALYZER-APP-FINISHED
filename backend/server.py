@@ -150,6 +150,11 @@ STRIPE_PRICE_IDS = {
     "pro": os.environ.get('STRIPE_PRO_PRICE_ID', 'price_placeholder_pro'), 
     "enterprise": os.environ.get('STRIPE_ENTERPRISE_PRICE_ID', 'price_placeholder_enterprise')
 }
+STRIPE_PAYMENT_LINKS = {
+    "basic": os.environ.get('STRIPE_BASIC_PAYMENT_LINK', ''),
+    "pro": os.environ.get('STRIPE_PRO_PAYMENT_LINK', ''),
+    "enterprise": os.environ.get('STRIPE_ENTERPRISE_PAYMENT_LINK', '')
+}
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
 
 # Analysis template
