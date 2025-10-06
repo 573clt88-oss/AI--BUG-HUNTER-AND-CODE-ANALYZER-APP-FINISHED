@@ -268,13 +268,14 @@ backend:
 
 test_plan:
   current_focus:
-    - "Multi-Tier Subscription System"
     - "Complete Stripe Integration" 
+    - "Deployment Environment Configuration"
     - "End-to-End Application Flow"
     - "Deployment Readiness Assessment"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Complete Stripe Integration"
   test_all: true
-  test_priority: "comprehensive_deployment_test"
+  test_priority: "deployment_blockers_first"
 
 agent_communication:
   - agent: "main"
