@@ -624,7 +624,16 @@ async def get_analysis_history():
     try:
         # Get recent analyses (limit to 10 for performance)
         analyses = await db.analysis_results.find({}).sort("timestamp", -1).limit(10).to_list(length=10)
-        return {"analyses": analyses}
+        
+        # Convert MongoDB documents to JSON-serializable format
+        serializable_analyses = []
+        for analysis in analyses:
+            # Remove the MongoDB _id field and use our custom id
+            if "_id" in analysis:
+                del analysis["_id"]
+            serializable_analyses.append(analysis)
+            
+        return {"analyses": serializable_analyses}
     except Exception as e:
         logger.error(f"Analysis history error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
