@@ -230,6 +230,88 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
 async def root():
     return {"message": "AI Bug Hunter & Code Analyzer SaaS API", "version": "2.0.0", "status": "running"}
 
+# User Authentication Routes
+@api_router.post("/auth/register")
+async def register_user(
+    background_tasks: BackgroundTasks,
+    email: EmailStr = Form(...),
+    name: str = Form(...),
+    plan: str = Form(default="free")
+):
+    """Register a new user and trigger welcome email"""
+    try:
+        # Create user record
+        user_data = {
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "name": name,
+            "plan": plan,
+            "created_at": datetime.utcnow(),
+            "trial_start": datetime.utcnow(),
+            "trial_end": datetime.utcnow() + timedelta(days=7) if plan == "free" else None,
+            "subscription_status": "trialing" if plan == "free" else "active",
+            "analysis_count": 0
+        }
+        
+        # Insert user into database
+        await db.users.insert_one(user_data)
+        
+        # Send welcome email in background
+        background_tasks.add_task(
+            send_welcome_email_task, 
+            email, 
+            name, 
+            plan
+        )
+        
+        logger.info(f"User registered: {email}, plan: {plan}")
+        
+        return {
+            "status": "success",
+            "message": "User registered successfully",
+            "user_id": user_data["id"],
+            "plan": plan,
+            "welcome_email": "scheduled"
+        }
+        
+    except Exception as e:
+        logger.error(f"User registration failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Registration failed: {str(e)}")
+
+@api_router.post("/auth/login")
+async def login_user(
+    email: EmailStr = Form(...),
+    password: str = Form(default="demo")
+):
+    """Simple login for demo purposes"""
+    try:
+        # Find user in database
+        user = await db.users.find_one({"email": email})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # In demo mode, accept any password
+        # In production, verify actual password hash
+        
+        return {
+            "status": "success",
+            "message": "Login successful", 
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "name": user["name"],
+                "plan": user.get("plan", "free"),
+                "subscription_status": user.get("subscription_status", "trialing")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
 @api_router.get("/subscription/plans")
 async def get_subscription_plans():
     """Get available subscription plans"""
