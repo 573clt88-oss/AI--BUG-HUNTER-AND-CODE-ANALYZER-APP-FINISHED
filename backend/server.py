@@ -36,7 +36,9 @@ logger = logging.getLogger(__name__)
 # Enums
 class SubscriptionTier(str, Enum):
     FREE = "free"
+    BASIC = "basic"
     PRO = "pro"
+    ENTERPRISE = "enterprise"
 
 class SubscriptionStatus(str, Enum):
     ACTIVE = "active"
