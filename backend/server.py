@@ -571,6 +571,67 @@ async def get_analysis_types():
         ]
     }
 
+# MailChimp Integration Endpoints
+@api_router.get("/mailchimp/health")
+async def mailchimp_health_check():
+    """Check MailChimp service health"""
+    try:
+        mailchimp = get_mailchimp_service()
+        health = await mailchimp.health_check()
+        return health
+    except Exception as e:
+        logger.error(f"MailChimp health check failed: {str(e)}")
+        return {
+            "status": "unhealthy",
+            "service": "mailchimp",
+            "error": str(e)
+        }
+
+@api_router.post("/admin/send-test-email")
+async def send_test_email(
+    background_tasks: BackgroundTasks,
+    email: EmailStr = Form(...),
+    name: str = Form(...),
+    email_type: str = Form(default="welcome")
+):
+    """Send test email for admin testing"""
+    try:
+        if email_type == "welcome":
+            background_tasks.add_task(send_welcome_email_task, email, name, "free")
+        elif email_type == "subscription":
+            subscription_data = {
+                "plan": "pro",
+                "amount": 19.0,
+                "created_at": datetime.utcnow().isoformat()
+            }
+            background_tasks.add_task(send_subscription_email_task, email, name, "created", subscription_data)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid email type")
+            
+        return {
+            "status": "success",
+            "message": f"Test {email_type} email scheduled for {email}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Test email error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send test email: {str(e)}")
+
+@api_router.post("/mailchimp/add-user")
+async def add_user_to_mailchimp(
+    email: EmailStr = Form(...),
+    name: str = Form(...),
+    plan: str = Form(default="free")
+):
+    """Manually add user to MailChimp audience"""
+    try:
+        mailchimp = get_mailchimp_service()
+        result = await mailchimp.add_user_to_audience(email, name, plan)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to add user to MailChimp: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include router
 app.include_router(api_router)
 
