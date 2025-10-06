@@ -830,11 +830,11 @@ eval(user_input)
         self.test_subscription_plans_endpoint()
         self.test_subscription_tiers_endpoint()
         
-        # ========== STRIPE INTEGRATION ==========
-        print("\n💰 STRIPE INTEGRATION")
+        # ========== STRIPE PAYMENT LINKS INTEGRATION ==========
+        print("\n💰 STRIPE PAYMENT LINKS INTEGRATION")
         print("-" * 40)
         self.test_stripe_price_ids_configuration()
-        self.test_stripe_checkout_sessions()
+        self.test_stripe_payment_links_checkout()
         
         # ========== CODE ANALYSIS ENGINE ==========
         print("\n🔍 CODE ANALYSIS ENGINE")
