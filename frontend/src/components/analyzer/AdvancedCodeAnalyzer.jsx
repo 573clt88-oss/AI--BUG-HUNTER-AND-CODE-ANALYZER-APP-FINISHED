@@ -60,9 +60,11 @@ class DataProcessor {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [splitView, setSplitView] = useState(true);
   const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [uploadedFile, setUploadedFile] = useState(null);
   
   const editorRef = useRef(null);
   const timeoutRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Mock analysis results for demo
   const mockAnalysisResults = {
