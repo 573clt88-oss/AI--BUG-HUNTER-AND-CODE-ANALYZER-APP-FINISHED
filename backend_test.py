@@ -23,8 +23,8 @@ class MailChimpBackendTester:
                 if line.startswith('REACT_APP_BACKEND_URL='):
                     self.base_url = line.split('=')[1].strip()
                     break
-        else:
-            self.base_url = "https://bugfinder-6.preview.emergentagent.com"
+            else:
+                self.base_url = "https://bugfinder-6.preview.emergentagent.com"
         
         self.api_url = f"{self.base_url}/api"
         self.test_results = []
