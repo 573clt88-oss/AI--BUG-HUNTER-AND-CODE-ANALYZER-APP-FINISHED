@@ -596,16 +596,6 @@ async def analyze_text_code(request: dict):
         logger.error(f"Text analysis error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.get("/analysis/history")
-async def get_analysis_history():
-    """Get analysis history"""
-    try:
-        history = await db.analysis_results.find({}).sort("timestamp", -1).limit(50).to_list(50)
-        return {"history": history}
-    except Exception as e:
-        logger.error(f"History error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 @api_router.get("/analysis/result/{result_id}")
 async def get_analysis_result(result_id: str):
     """Get specific analysis result"""
