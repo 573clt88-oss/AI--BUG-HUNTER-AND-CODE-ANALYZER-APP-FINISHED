@@ -272,6 +272,82 @@ processData(data) {
     }
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadedFile(file);
+    setIsAnalyzing(true);
+    setAnalysisProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return prev;
+        }
+        return prev + 10;
+      });
+    }, 300);
+
+    try {
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('analysis_type', analysisType);
+
+      const response = await fetch(`${BACKEND_URL}/api/analyze/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload analysis failed: ${response.status} ${response.statusText}`);
+      }
+
+      const analysisResult = await response.json();
+      
+      // Also load file content into editor
+      const fileContent = await file.text();
+      setCode(fileContent);
+      
+      // Detect language from file extension
+      const extension = file.name.toLowerCase().split('.').pop();
+      const languageMap = {
+        'py': 'python', 'js': 'javascript', 'ts': 'typescript',
+        'java': 'java', 'cpp': 'cpp', 'c': 'c', 'cs': 'csharp',
+        'php': 'php', 'rb': 'ruby', 'go': 'go', 'rs': 'rust'
+      };
+      if (languageMap[extension]) {
+        setLanguage(languageMap[extension]);
+      }
+      
+      setAnalysisResults({
+        ...analysisResult,
+        timestamp: new Date().toISOString()
+      });
+      
+      setAnalysisProgress(100);
+      
+    } catch (error) {
+      console.error('File upload analysis failed:', error);
+      
+      // Show error message
+      setAnalysisResults({
+        ...mockAnalysisResults,
+        timestamp: new Date().toISOString(),
+        summary: `File upload failed: ${error.message}. Please try again or use the text editor.`,
+        ai_model_used: "Upload Error"
+      });
+      
+      setAnalysisProgress(100);
+    } finally {
+      clearInterval(progressInterval);
+      setIsAnalyzing(false);
+      setTimeout(() => setAnalysisProgress(0), 1000);
+    }
+  };
+
   const getSeverityColor = (severity) => {
     switch (severity) {
       case 'critical': return 'bg-red-600 text-white';
