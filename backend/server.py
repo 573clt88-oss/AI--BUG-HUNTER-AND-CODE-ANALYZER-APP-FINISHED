@@ -405,63 +405,49 @@ async def create_subscription_checkout(
     tier: str = Form(...),
     user_email: str = Form(default="demo@example.com")
 ):
-    """Create Stripe checkout session for any subscription tier"""
+    """Get Stripe payment link for any subscription tier"""
     try:
         # Validate tier
         if tier not in ["basic", "pro", "enterprise"]:
             raise HTTPException(status_code=400, detail="Invalid subscription tier")
         
-        # Get price ID for the tier
-        price_id = STRIPE_PRICE_IDS.get(tier)
-        if not price_id or "placeholder" in price_id:
-            raise HTTPException(status_code=400, detail=f"Price ID not configured for {tier} tier")
+        # Get payment link for the tier
+        payment_link = STRIPE_PAYMENT_LINKS.get(tier)
+        if not payment_link or "placeholder" in payment_link:
+            raise HTTPException(status_code=400, detail=f"Payment link not configured for {tier} tier")
         
         # Get plan details
         plan_details = SUBSCRIPTION_PLANS.get(tier)
         if not plan_details:
             raise HTTPException(status_code=400, detail=f"Plan details not found for {tier}")
         
-        host_url = str(request.base_url).rstrip('/')
-        webhook_url = f"{host_url}/api/webhook/stripe"
-        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-        
-        success_url = f"{host_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
-        cancel_url = f"{host_url}/subscription/cancel"
-        
-        checkout_request = CheckoutSessionRequest(
-            stripe_price_id=price_id,
-            quantity=1,
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata={
-                "tier": tier, 
-                "user_email": user_email,
-                "plan_name": plan_details["name"]
-            }
-        )
-        
-        session = await stripe_checkout.create_checkout_session(checkout_request)
-        
-        # Save payment record
+        # Create pending payment record for tracking
+        payment_id = str(uuid.uuid4())
         payment = PaymentTransaction(
-            stripe_session_id=session.session_id,
+            id=payment_id,
+            stripe_session_id=f"payment_link_{payment_id}",
             amount=plan_details["monthly_price"],
-            currency="usd"
+            currency="usd",
+            status=PaymentStatus.PENDING
         )
         await db.payment_transactions.insert_one(payment.dict())
         
+        logger.info(f"Payment link generated for {tier} tier: {user_email}")
+        
         return {
-            "session": session,
+            "payment_link": payment_link,
             "tier": tier,
             "plan_name": plan_details["name"],
-            "monthly_price": plan_details["monthly_price"]
+            "monthly_price": plan_details["monthly_price"],
+            "payment_id": payment_id,
+            "redirect_url": payment_link
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Checkout error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Checkout failed: {str(e)}")
+        logger.error(f"Payment link error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Payment link generation failed: {str(e)}")
 
 @api_router.get("/subscription/checkout/status/{session_id}")
 async def get_checkout_status(session_id: str):
