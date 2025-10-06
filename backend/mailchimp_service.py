@@ -191,15 +191,27 @@ class MailChimpService:
         
         plan_benefits = {
             "free": [
-                "7-day trial of premium features",
-                "Basic code analysis",
+                "5 analyses per month",
+                "Basic error detection",
                 "Community support"
             ],
+            "basic": [
+                "50 analyses per month",
+                "Advanced error detection", 
+                "Private code analysis",
+                "Email support"
+            ],
             "pro": [
-                "Unlimited code analysis", 
+                "200 analyses per month", 
                 "Advanced security scanning",
                 "Priority support",
                 "API access"
+            ],
+            "enterprise": [
+                "Unlimited analyses",
+                "Team collaboration",
+                "Dedicated support",
+                "SLA guarantee"
             ]
         }
         
