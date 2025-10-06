@@ -778,33 +778,61 @@ eval(user_input)
                         f"Test setup error: {str(e)}")
     
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("Starting MailChimp Backend Integration Tests")
-        print("=" * 60)
+        """Run comprehensive deployment readiness tests"""
+        print("🚀 COMPREHENSIVE DEPLOYMENT READINESS TESTING")
+        print("=" * 80)
         
-        # Test basic connectivity first
+        # ========== CORE APPLICATION HEALTH ==========
+        print("\n📋 CORE APPLICATION HEALTH")
+        print("-" * 40)
         self.test_api_root()
-        
-        # Test environment configuration
         self.test_environment_configuration()
         
-        # Test MailChimp service health
+        # ========== MULTI-TIER SUBSCRIPTION SYSTEM ==========
+        print("\n💳 MULTI-TIER SUBSCRIPTION SYSTEM")
+        print("-" * 40)
+        self.test_subscription_plans_endpoint()
+        self.test_subscription_tiers_endpoint()
+        
+        # ========== STRIPE INTEGRATION ==========
+        print("\n💰 STRIPE INTEGRATION")
+        print("-" * 40)
+        self.test_stripe_price_ids_configuration()
+        self.test_stripe_checkout_sessions()
+        
+        # ========== CODE ANALYSIS ENGINE ==========
+        print("\n🔍 CODE ANALYSIS ENGINE")
+        print("-" * 40)
+        self.test_code_analysis_upload()
+        self.test_code_analysis_text()
+        self.test_supported_languages()
+        
+        # ========== AUTHENTICATION & USER MANAGEMENT ==========
+        print("\n👤 AUTHENTICATION & USER MANAGEMENT")
+        print("-" * 40)
+        self.test_user_authentication_flow()
+        
+        # ========== MAILCHIMP EMAIL AUTOMATION ==========
+        print("\n📧 MAILCHIMP EMAIL AUTOMATION")
+        print("-" * 40)
         self.test_mailchimp_health_check()
-        
-        # Test user registration with email automation
         self.test_user_registration_with_email()
-        
-        # Test admin endpoints
         self.test_admin_send_test_email()
-        
-        # Test MailChimp audience management
         self.test_mailchimp_add_user()
         
-        # Test error handling
+        # ========== PERFORMANCE & RELIABILITY ==========
+        print("\n⚡ PERFORMANCE & RELIABILITY")
+        print("-" * 40)
+        self.test_api_response_times()
+        self.test_concurrent_requests()
+        
+        # ========== ERROR HANDLING ==========
+        print("\n🛡️ ERROR HANDLING & SECURITY")
+        print("-" * 40)
         self.test_error_handling()
         
-        # Print summary
-        self.print_summary()
+        # Print comprehensive summary
+        self.print_deployment_summary()
     
     def print_summary(self):
         """Print test summary"""
