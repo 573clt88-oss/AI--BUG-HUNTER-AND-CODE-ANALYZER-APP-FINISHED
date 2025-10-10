@@ -366,10 +366,13 @@ export default function SubscriptionPage() {
         {/* Contact Support */}
         <div className="text-center mt-8">
           <p className="text-slate-400">
-            Have questions? <a href="mailto:support@aibughunter.com" className="text-purple-400 hover:text-purple-300">Contact our support team</a>
+            Have questions? <Link to="/support" className="text-purple-400 hover:text-purple-300">Contact our support team</Link>
           </p>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
