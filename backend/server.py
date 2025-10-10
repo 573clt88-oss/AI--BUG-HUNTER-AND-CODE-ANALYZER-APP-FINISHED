@@ -536,7 +536,9 @@ async def analyze_uploaded_file(
         allowed_extensions = {
             '.py': 'python', '.js': 'javascript', '.ts': 'typescript',
             '.java': 'java', '.cpp': 'cpp', '.c': 'c', '.cs': 'csharp',
-            '.php': 'php', '.rb': 'ruby', '.go': 'go', '.rs': 'rust'
+            '.php': 'php', '.rb': 'ruby', '.go': 'go', '.rs': 'rust',
+            '.yml': 'yaml', '.yaml': 'yaml', '.json': 'json', '.xml': 'xml',
+            '.html': 'html', '.css': 'css', '.sh': 'bash', '.sql': 'sql'
         }
         
         file_extension = Path(file.filename).suffix.lower()
