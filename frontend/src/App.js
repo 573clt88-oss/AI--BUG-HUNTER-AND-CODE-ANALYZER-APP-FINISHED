@@ -32,6 +32,10 @@ import TermsOfService from "@/components/legal/TermsOfService";
 import PrivacyPolicy from "@/components/legal/PrivacyPolicy";
 import ContactPage from "@/components/support/ContactPage";
 
+// Analytics Dashboards
+import AnalyticsDashboard from "@/components/dashboard/AnalyticsDashboard";
+import AdminAnalyticsDashboard from "@/components/dashboard/AdminAnalyticsDashboard";
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
