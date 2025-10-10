@@ -645,6 +645,25 @@ async def get_analysis_types():
         ]
     }
 
+@api_router.get("/supported-languages")
+async def get_supported_languages():
+    """Get supported programming languages"""
+    return {
+        "languages": [
+            {"id": "python", "name": "Python", "extension": ".py"},
+            {"id": "javascript", "name": "JavaScript", "extension": ".js"},
+            {"id": "typescript", "name": "TypeScript", "extension": ".ts"},
+            {"id": "java", "name": "Java", "extension": ".java"},
+            {"id": "cpp", "name": "C++", "extension": ".cpp"},
+            {"id": "c", "name": "C", "extension": ".c"},
+            {"id": "csharp", "name": "C#", "extension": ".cs"},
+            {"id": "php", "name": "PHP", "extension": ".php"},
+            {"id": "ruby", "name": "Ruby", "extension": ".rb"},
+            {"id": "go", "name": "Go", "extension": ".go"},
+            {"id": "rust", "name": "Rust", "extension": ".rs"}
+        ]
+    }
+
 # MailChimp Integration Endpoints
 @api_router.get("/mailchimp/health")
 async def mailchimp_health_check():
