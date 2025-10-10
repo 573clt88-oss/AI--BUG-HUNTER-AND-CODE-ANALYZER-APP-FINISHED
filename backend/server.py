@@ -552,6 +552,10 @@ async def analyze_uploaded_file(
         # Read and analyze
         content = await file.read()
         
+        # Check if file is empty
+        if not content:
+            raise HTTPException(status_code=400, detail="File is empty")
+            
         # Try different encodings
         try:
             content_str = content.decode('utf-8')
@@ -563,6 +567,10 @@ async def analyze_uploaded_file(
                     content_str = content.decode('cp1252')
                 except UnicodeDecodeError:
                     raise HTTPException(status_code=400, detail="File encoding not supported. Please use UTF-8 encoded files.")
+        
+        # Check if decoded content is meaningful
+        if not content_str.strip():
+            raise HTTPException(status_code=400, detail="File contains no readable content")
         
         analysis_result = await analyze_code_with_ai(content_str, file_type, analysis_type)
         
