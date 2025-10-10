@@ -245,10 +245,23 @@ function App() {
               />
             } />
             
+            {/* Analytics Routes */}
+            <Route path="/analytics" element={
+              <ProtectedRoute>
+                <AnalyticsDashboard />
+              </ProtectedRoute>
+            } />
+            
             {/* Admin Routes */}
             <Route path="/admin" element={
               <ProtectedRoute adminOnly={true}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/analytics" element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminAnalyticsDashboard />
               </ProtectedRoute>
             } />
             
