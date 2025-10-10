@@ -528,9 +528,9 @@ async def analyze_uploaded_file(
         if not file.filename:
             raise HTTPException(status_code=400, detail="No file provided or file has no name")
             
-        # Check file size (max 1MB)
-        if file.size and file.size > 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File too large. Maximum size is 1MB")
+        # Check file size (max 10MB for code files)
+        if file.size and file.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB")
         
         # File type validation
         allowed_extensions = {
