@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import {
   Clock, Calendar, CreditCard, AlertTriangle, Star
 } from 'lucide-react';
 import axios from 'axios';
+import Footer from '@/components/Footer';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
