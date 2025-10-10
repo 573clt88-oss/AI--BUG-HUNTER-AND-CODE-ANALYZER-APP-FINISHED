@@ -637,7 +637,14 @@ async def get_analysis_result(result_id: str):
         result = await db.analysis_results.find_one({"id": result_id})
         if not result:
             raise HTTPException(status_code=404, detail="Result not found")
+        
+        # Remove MongoDB ObjectId to prevent serialization issues
+        if "_id" in result:
+            del result["_id"]
+            
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Result retrieval error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
