@@ -178,16 +178,12 @@ async def analyze_code_with_ai(content: str, file_type: str, analysis_type: str)
             logger.warning("No valid Emergent LLM key found, using demo mode")
             return _demo_analysis(content, file_type)
         
-        # Initialize LlmChat with Emergent API
+        # Initialize LlmChat with Emergent API and configure Claude Sonnet 4
         llm = LlmChat(
             api_key=llm_key,
             session_id=f"analysis_{uuid.uuid4().hex[:8]}",
             system_message="You are an expert code security and quality analyzer. Provide detailed, actionable analysis with specific code fixes."
-        )
-        
-        # Configure to use Claude Sonnet 4
-        llm = llm.with_model("claude-sonnet-4-20250514")
-        llm = llm.with_params(temperature=0.3, max_tokens=4000)
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         # Create detailed prompt for code analysis
         analysis_prompt = f"""You are an expert code security and quality analyzer. Analyze the following {file_type} code and provide a detailed analysis.
