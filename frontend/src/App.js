@@ -23,6 +23,7 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import Dashboard from "@/components/Dashboard";
 import FileAnalyzer from "@/components/FileAnalyzer";
 import TextAnalyzer from "@/components/TextAnalyzer";
+import SimpleAnalyzer from "@/components/SimpleAnalyzer";
 import AnalysisHistory from "@/components/AnalysisHistory";
 import AnalysisResults from "@/components/AnalysisResults";
 
