@@ -599,6 +599,7 @@ async def analyze_uploaded_file(
 async def analyze_text_code(request: dict):
     """Analyze code from text input"""
     try:
+        logger.info(f"Text analysis request received: {len(str(request))} chars")
         file_content = request.get("file_content", "")
         file_type = request.get("file_type", "")
         analysis_type = request.get("analysis_type", "comprehensive")
