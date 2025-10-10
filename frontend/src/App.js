@@ -27,6 +27,11 @@ import SimpleAnalyzer from "@/components/SimpleAnalyzer";
 import AnalysisHistory from "@/components/AnalysisHistory";
 import AnalysisResults from "@/components/AnalysisResults";
 
+// Legal & Support Pages
+import TermsOfService from "@/components/legal/TermsOfService";
+import PrivacyPolicy from "@/components/legal/PrivacyPolicy";
+import ContactPage from "@/components/support/ContactPage";
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
