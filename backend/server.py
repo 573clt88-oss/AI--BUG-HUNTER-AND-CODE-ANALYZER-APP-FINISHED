@@ -539,7 +539,18 @@ async def analyze_uploaded_file(
         
         # Read and analyze
         content = await file.read()
-        content_str = content.decode('utf-8')
+        
+        # Try different encodings
+        try:
+            content_str = content.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                content_str = content.decode('latin-1')
+            except UnicodeDecodeError:
+                try:
+                    content_str = content.decode('cp1252')
+                except UnicodeDecodeError:
+                    raise HTTPException(status_code=400, detail="File encoding not supported. Please use UTF-8 encoded files.")
         
         analysis_result = await analyze_code_with_ai(content_str, file_type, analysis_type)
         
