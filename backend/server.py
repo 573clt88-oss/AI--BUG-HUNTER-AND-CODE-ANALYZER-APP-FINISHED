@@ -786,6 +786,225 @@ async def add_user_to_mailchimp(
         logger.error(f"Failed to add user to MailChimp: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Analytics Endpoints
+@api_router.get("/analytics/user/{user_id}")
+async def get_user_analytics(user_id: str):
+    """Get analytics for a specific user"""
+    try:
+        # Get user data
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get user's analyses
+        analyses = await db.analysis_results.find({"user_id": user_id}).to_list(length=None)
+        
+        # Calculate statistics
+        total_analyses = len(analyses)
+        
+        # Group analyses by date for trends
+        from collections import defaultdict
+        analyses_by_date = defaultdict(int)
+        issues_by_severity = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+        total_security_score = 0
+        total_quality_score = 0
+        languages_used = defaultdict(int)
+        
+        for analysis in analyses:
+            # Date grouping
+            date_key = analysis.get("timestamp", datetime.utcnow()).strftime("%Y-%m-%d")
+            analyses_by_date[date_key] += 1
+            
+            # Language tracking
+            file_type = analysis.get("file_type", "unknown")
+            languages_used[file_type] += 1
+            
+            # Scores
+            total_security_score += analysis.get("security_score", 0)
+            total_quality_score += analysis.get("code_quality_score", 0)
+            
+            # Issues by severity
+            for issue in analysis.get("issues", []):
+                severity = issue.get("severity", "low")
+                if severity in issues_by_severity:
+                    issues_by_severity[severity] += 1
+        
+        avg_security_score = total_security_score / total_analyses if total_analyses > 0 else 0
+        avg_quality_score = total_quality_score / total_analyses if total_analyses > 0 else 0
+        
+        # Get recent analyses (last 10)
+        recent_analyses = sorted(analyses, key=lambda x: x.get("timestamp", datetime.min), reverse=True)[:10]
+        recent_analyses_formatted = [
+            {
+                "id": a.get("id"),
+                "file_name": a.get("file_name"),
+                "file_type": a.get("file_type"),
+                "timestamp": a.get("timestamp").isoformat() if a.get("timestamp") else None,
+                "security_score": a.get("security_score"),
+                "code_quality_score": a.get("code_quality_score"),
+                "issues_count": len(a.get("issues", []))
+            }
+            for a in recent_analyses
+        ]
+        
+        return {
+            "user_id": user_id,
+            "subscription_tier": user.get("subscription_tier", "free"),
+            "monthly_limit": user.get("monthly_limit", 10),
+            "monthly_analyses_used": user.get("monthly_analyses_used", 0),
+            "total_analyses": total_analyses,
+            "avg_security_score": round(avg_security_score, 2),
+            "avg_quality_score": round(avg_quality_score, 2),
+            "issues_by_severity": issues_by_severity,
+            "languages_used": dict(languages_used),
+            "analyses_by_date": dict(analyses_by_date),
+            "recent_analyses": recent_analyses_formatted
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Analytics error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/admin/overview")
+async def get_admin_overview():
+    """Get platform-wide analytics overview (admin only)"""
+    try:
+        # Count total users
+        total_users = await db.users.count_documents({})
+        
+        # Count active subscriptions (non-free tiers)
+        active_subscriptions = await db.users.count_documents({
+            "subscription_tier": {"$ne": "free"}
+        })
+        
+        # Count analyses
+        total_analyses = await db.analysis_results.count_documents({})
+        
+        # Get current month analyses
+        from datetime import timezone
+        first_day_of_month = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        analyses_this_month = await db.analysis_results.count_documents({
+            "timestamp": {"$gte": first_day_of_month}
+        })
+        
+        # Calculate revenue (sum of completed payments)
+        payments = await db.payment_transactions.find({"status": "completed"}).to_list(length=None)
+        monthly_revenue = sum(p.get("amount", 0) for p in payments)
+        
+        # Calculate conversion rate (paid users / total users)
+        conversion_rate = (active_subscriptions / total_users * 100) if total_users > 0 else 0
+        
+        # Get subscription breakdown
+        subscription_breakdown = {
+            "free": await db.users.count_documents({"subscription_tier": "free"}),
+            "basic": await db.users.count_documents({"subscription_tier": "basic"}),
+            "pro": await db.users.count_documents({"subscription_tier": "pro"}),
+            "enterprise": await db.users.count_documents({"subscription_tier": "enterprise"})
+        }
+        
+        # Get recent user signups (last 30 days)
+        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+        new_users = await db.users.count_documents({
+            "created_at": {"$gte": thirty_days_ago}
+        })
+        
+        return {
+            "total_users": total_users,
+            "active_subscriptions": active_subscriptions,
+            "monthly_revenue": round(monthly_revenue, 2),
+            "total_analyses": total_analyses,
+            "analyses_this_month": analyses_this_month,
+            "conversion_rate": round(conversion_rate, 2),
+            "subscription_breakdown": subscription_breakdown,
+            "new_users_last_30_days": new_users
+        }
+        
+    except Exception as e:
+        logger.error(f"Admin analytics error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/admin/trends")
+async def get_admin_trends():
+    """Get platform-wide trend data for charts"""
+    try:
+        # Get analyses for the last 30 days grouped by date
+        from datetime import timezone
+        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+        
+        analyses = await db.analysis_results.find({
+            "timestamp": {"$gte": thirty_days_ago}
+        }).to_list(length=None)
+        
+        users = await db.users.find({
+            "created_at": {"$gte": thirty_days_ago}
+        }).to_list(length=None)
+        
+        # Group by date
+        from collections import defaultdict
+        analyses_by_date = defaultdict(int)
+        users_by_date = defaultdict(int)
+        
+        for analysis in analyses:
+            date_key = analysis.get("timestamp", datetime.utcnow()).strftime("%Y-%m-%d")
+            analyses_by_date[date_key] += 1
+        
+        for user in users:
+            date_key = user.get("created_at", datetime.utcnow()).strftime("%Y-%m-%d")
+            users_by_date[date_key] += 1
+        
+        # Generate date range for last 30 days
+        date_range = []
+        for i in range(30):
+            date = (datetime.now(timezone.utc) - timedelta(days=29-i)).strftime("%Y-%m-%d")
+            date_range.append({
+                "date": date,
+                "analyses": analyses_by_date.get(date, 0),
+                "new_users": users_by_date.get(date, 0)
+            })
+        
+        return {
+            "trends": date_range
+        }
+        
+    except Exception as e:
+        logger.error(f"Trends analytics error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test database connection
+        await db.users.find_one()
+        
+        return {
+            "status": "healthy",
+            "service": "AI Bug Hunter & Code Analyzer",
+            "version": "2.0.0",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "service": "AI Bug Hunter & Code Analyzer", 
+            "version": "2.0.0",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": str(e)
+        }
+
+@api_router.get("/version")
+async def get_version():
+    """Get API version information"""
+    return {
+        "version": "2.0.0",
+        "api_version": "v1",
+        "environment": os.environ.get("ENVIRONMENT", "development"),
+        "last_updated": "2025-10-10"
+    }
+
 # Include router
 app.include_router(api_router)
 
