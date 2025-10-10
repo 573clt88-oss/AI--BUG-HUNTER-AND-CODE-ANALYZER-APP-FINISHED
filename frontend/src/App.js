@@ -216,7 +216,7 @@ function App() {
             } />
             
             <Route path="/test-analyzer" element={
-              <TextAnalyzer 
+              <SimpleAnalyzer 
                 supportedLanguages={supportedLanguages}
                 analysisTypes={analysisTypes}
               />
