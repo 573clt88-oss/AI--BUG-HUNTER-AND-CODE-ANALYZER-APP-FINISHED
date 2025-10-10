@@ -228,6 +228,13 @@ function App() {
               />
             } />
             
+            <Route path="/simple-analyzer" element={
+              <SimpleAnalyzer 
+                supportedLanguages={supportedLanguages}
+                analysisTypes={analysisTypes}
+              />
+            } />
+            
             {/* Admin Routes */}
             <Route path="/admin" element={
               <ProtectedRoute adminOnly={true}>
