@@ -368,13 +368,13 @@ backend:
 
 test_plan:
   current_focus:
-    - "Webhook Endpoint Infrastructure"
-    - "Supported Languages API Endpoint"
-    - "Analysis Types API Endpoint"
-    - "Basic API Health Check"
+    - "Health Check Endpoint"
+    - "Version Information Endpoint"
+    - "Admin Analytics Overview Endpoint"
+    - "Admin Analytics Trends Endpoint"
   stuck_tasks: []
   test_all: false
-  test_priority: "focused_endpoints_testing"
+  test_priority: "analytics_health_endpoints_testing"
 
 frontend:
   - task: "Frontend Application Loading & Routing"
