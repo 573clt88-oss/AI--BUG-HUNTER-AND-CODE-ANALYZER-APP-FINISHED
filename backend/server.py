@@ -472,11 +472,22 @@ async def get_checkout_status(session_id: str):
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
-    """Handle Stripe webhooks and trigger subscription emails"""
+    """
+    Handle Stripe webhooks and trigger subscription emails
+    
+    IMPORTANT: Before using in production:
+    1. Configure webhook URL in Stripe Dashboard: https://your-domain.com/api/webhook/stripe
+    2. Add STRIPE_WEBHOOK_SECRET to environment variables
+    3. See WEBHOOK_SETUP.md for detailed setup instructions
+    
+    Currently handles: checkout.session.completed
+    """
     try:
         body = await request.body()
         stripe_signature = request.headers.get("Stripe-Signature")
         
+        # Note: webhook_url parameter is not used for signature verification
+        # The signature is verified using STRIPE_WEBHOOK_SECRET env variable
         stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
         webhook_response = await stripe_checkout.handle_webhook(body, stripe_signature)
         
