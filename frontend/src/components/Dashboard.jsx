@@ -243,13 +243,10 @@ export default function Dashboard({ supportedLanguages, analysisTypes }) {
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="text-slate-400">
-            Powered by AI • Secure Analysis • Enterprise Ready
-          </p>
-        </div>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
