@@ -248,6 +248,11 @@ function App() {
               </ProtectedRoute>
             } />
             
+            {/* Legal & Support Routes (Public) */}
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/support" element={<ContactPage />} />
+            
             {/* Public Landing Page */}
             <Route path="/" element={
               <Dashboard 
