@@ -240,7 +240,8 @@ Be specific and provide actionable fixes. The "fixed_code" should be the correct
         import re
         
         # Extract JSON from response (handle markdown code blocks)
-        response_text = response.get("content", "")
+        # Response is a string from send_message
+        response_text = response if isinstance(response, str) else str(response)
         
         # Try to find JSON in the response
         json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
