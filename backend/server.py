@@ -524,6 +524,14 @@ async def analyze_uploaded_file(
 ):
     """Analyze uploaded code file"""
     try:
+        # Validate file exists and has a filename
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No file provided or file has no name")
+            
+        # Check file size (max 1MB)
+        if file.size and file.size > 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 1MB")
+        
         # File type validation
         allowed_extensions = {
             '.py': 'python', '.js': 'javascript', '.ts': 'typescript',
@@ -532,8 +540,12 @@ async def analyze_uploaded_file(
         }
         
         file_extension = Path(file.filename).suffix.lower()
+        if not file_extension:
+            raise HTTPException(status_code=400, detail="File must have a valid extension")
+            
         if file_extension not in allowed_extensions:
-            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_extension}")
+            supported_types = ', '.join(allowed_extensions.keys())
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_extension}. Supported types: {supported_types}")
             
         file_type = allowed_extensions[file_extension]
         
