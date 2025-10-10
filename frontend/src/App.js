@@ -214,6 +214,13 @@ function App() {
               </ProtectedRoute>
             } />
             
+            <Route path="/test-analyzer" element={
+              <TextAnalyzer 
+                supportedLanguages={supportedLanguages}
+                analysisTypes={analysisTypes}
+              />
+            } />
+            
             {/* Admin Routes */}
             <Route path="/admin" element={
               <ProtectedRoute adminOnly={true}>
