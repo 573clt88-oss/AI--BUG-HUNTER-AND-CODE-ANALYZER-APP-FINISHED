@@ -694,7 +694,14 @@ async def get_supported_languages():
             {"id": "php", "name": "PHP", "extension": ".php"},
             {"id": "ruby", "name": "Ruby", "extension": ".rb"},
             {"id": "go", "name": "Go", "extension": ".go"},
-            {"id": "rust", "name": "Rust", "extension": ".rs"}
+            {"id": "rust", "name": "Rust", "extension": ".rs"},
+            {"id": "yaml", "name": "YAML", "extension": ".yml"},
+            {"id": "json", "name": "JSON", "extension": ".json"},
+            {"id": "xml", "name": "XML", "extension": ".xml"},
+            {"id": "html", "name": "HTML", "extension": ".html"},
+            {"id": "css", "name": "CSS", "extension": ".css"},
+            {"id": "bash", "name": "Bash", "extension": ".sh"},
+            {"id": "sql", "name": "SQL", "extension": ".sql"}
         ]
     }
 
