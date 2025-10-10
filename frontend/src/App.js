@@ -221,6 +221,13 @@ function App() {
               />
             } />
             
+            <Route path="/test-file-analyzer" element={
+              <FileAnalyzer 
+                supportedLanguages={supportedLanguages}
+                analysisTypes={analysisTypes}
+              />
+            } />
+            
             {/* Admin Routes */}
             <Route path="/admin" element={
               <ProtectedRoute adminOnly={true}>
