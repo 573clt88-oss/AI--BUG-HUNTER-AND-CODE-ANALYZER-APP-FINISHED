@@ -197,7 +197,7 @@ export default function Dashboard({ supportedLanguages, analysisTypes }) {
                       Upload First File
                     </Button>
                   </Link>
-                  <Link to="/analyze-text">
+                  <Link to="/simple-analyzer">
                     <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
                       Analyze Code
                     </Button>
