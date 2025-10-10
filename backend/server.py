@@ -228,8 +228,9 @@ Focus on:
 
 Be specific and provide actionable fixes. The "fixed_code" should be the corrected version of the problematic code."""
 
-        # Call AI using send_message
-        response = llm.send_message(analysis_prompt)
+        # Call AI using send_message with UserMessage
+        user_message = UserMessage(text=analysis_prompt)
+        response = await llm.send_message(user_message)
         
         # Parse AI response
         import json
