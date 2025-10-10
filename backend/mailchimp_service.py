@@ -31,7 +31,7 @@ class MailChimpService:
         self.audience_id = os.environ.get('DEFAULT_AUDIENCE_ID')
         self.app_name = os.environ.get('SENDER_NAME', 'AI Bug Hunter')
         self.support_email = os.environ.get('REPLY_TO_EMAIL', 'support@aibughunter.com')
-        self.app_base_url = os.environ.get('APP_BASE_URL', 'https://bugfinder-6.preview.emergentagent.com')
+        self.app_base_url = os.environ.get('APP_BASE_URL', 'https://codebugsleuth.preview.emergentagent.com')
         
         if not self.api_key:
             logger.error("MailChimp API key not found in environment variables")

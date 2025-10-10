@@ -784,8 +784,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=[
         "http://localhost:3000",
-        "https://bugfinder-6.preview.emergentagent.com",
-        "https://bugfinder-6.preview.emergentagent.com"
+        "https://codebugsleuth.preview.emergentagent.com",
+        "https://codebugsleuth.preview.emergentagent.com"
     ],
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

@@ -26,7 +26,7 @@ class ComprehensiveBackendTester:
                     self.base_url = line.split('=')[1].strip()
                     break
             else:
-                self.base_url = "https://bugfinder-6.preview.emergentagent.com"
+                self.base_url = "https://codebugsleuth.preview.emergentagent.com"
         
         self.api_url = f"{self.base_url}/api"
         self.test_results = []
