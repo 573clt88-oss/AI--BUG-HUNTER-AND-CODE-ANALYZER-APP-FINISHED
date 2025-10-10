@@ -394,7 +394,16 @@ export default function SimpleAnalyzer({ supportedLanguages = [], analysisTypes 
                       {results.suggestions.map((suggestion, index) => (
                         <div key={index} className="flex items-start gap-2 text-sm">
                           <span className="text-green-400 mt-0.5">✓</span>
-                          <span className="text-slate-300">{suggestion}</span>
+                          <div className="flex-1">
+                            <span className="text-slate-300">
+                              {typeof suggestion === 'string' ? suggestion : suggestion.description}
+                            </span>
+                            {typeof suggestion === 'object' && suggestion.category && (
+                              <div className="text-xs text-slate-500 mt-1">
+                                Category: {suggestion.category} | Impact: {suggestion.impact}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </CardContent>
