@@ -103,10 +103,8 @@ export default function TextAnalyzer({ supportedLanguages, analysisTypes }) {
         description: "Your code has been analyzed successfully",
       });
 
-      // Navigate to results page
-      setTimeout(() => {
-        navigate(`/results/${response.data.id}`);
-      }, 1000);
+      // Show success message - results are now handled inline
+      // (Results display would be implemented here in a future update)
 
     } catch (error) {
       console.error("Analysis error:", error);
