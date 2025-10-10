@@ -34,11 +34,31 @@ async def create_indexes():
         
         # Users collection indexes
         print("\n1️⃣  Users collection:")
-        await db.users.create_index("id", unique=True)
-        print("   ✅ Created unique index on 'id'")
+        try:
+            await db.users.create_index("id", unique=True)
+            print("   ✅ Created unique index on 'id'")
+        except Exception as e:
+            if "already exists" in str(e) or "index already exists" in str(e).lower():
+                print("   ℹ️  Index on 'id' already exists")
+            else:
+                print(f"   ⚠️  Error creating 'id' index: {str(e)}")
         
-        await db.users.create_index("email", unique=True)
-        print("   ✅ Created unique index on 'email'")
+        try:
+            await db.users.create_index("email", unique=True, sparse=True)
+            print("   ✅ Created unique index on 'email'")
+        except Exception as e:
+            if "already exists" in str(e) or "index already exists" in str(e).lower():
+                print("   ℹ️  Index on 'email' already exists")
+            elif "duplicate key" in str(e).lower():
+                print("   ⚠️  Cannot create unique index on 'email' - duplicate emails exist")
+                print("      Creating non-unique index instead...")
+                try:
+                    await db.users.create_index("email")
+                    print("   ✅ Created non-unique index on 'email'")
+                except:
+                    print("   ⚠️  Email index already exists")
+            else:
+                print(f"   ⚠️  Error creating 'email' index: {str(e)}")
         
         await db.users.create_index("subscription_tier")
         print("   ✅ Created index on 'subscription_tier'")
