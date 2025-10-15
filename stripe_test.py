@@ -18,7 +18,7 @@ def test_stripe_api_key():
         print("❌ STRIPE_API_KEY not found in environment")
         return False
     
-    print(f"🔑 Testing Stripe API Key: {api_key[:20]}...")
+    print("🔑 Testing Stripe API Key...")  # Do not log the key or any part of it
     
     try:
         stripe.api_key = api_key
