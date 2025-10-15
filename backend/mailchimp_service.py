@@ -379,10 +379,11 @@ class MailChimpService:
             }
             
         except Exception as e:
+            logger.exception("Error during MailChimp health check")
             return {
                 "status": "unhealthy",
                 "service": "mailchimp", 
-                "error": str(e)
+                "error": "Mailchimp health check failed."
             }
 
 # Global instance

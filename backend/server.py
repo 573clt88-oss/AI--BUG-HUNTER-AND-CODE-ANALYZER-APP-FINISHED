@@ -823,7 +823,7 @@ async def mailchimp_health_check():
         return {
             "status": "unhealthy",
             "service": "mailchimp",
-            "error": str(e)
+            "error": "Mailchimp health check failed."
         }
 
 @api_router.post("/admin/send-test-email")
