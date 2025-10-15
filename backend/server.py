@@ -1074,12 +1074,13 @@ async def health_check():
             "database": "connected"
         }
     except Exception as e:
+        logger.error(f"Health check error: {str(e)}")
         return {
             "status": "unhealthy",
             "service": "AI Bug Hunter & Code Analyzer", 
             "version": "2.0.0",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "error": str(e)
+            "error": "Service unavailable"
         }
 
 @api_router.get("/version")
