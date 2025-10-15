@@ -343,8 +343,32 @@ module.exports = {
   babel: {
     plugins: [babelMetadataPlugin],
   },
-  devServer: (config) => {
-    config.setupMiddlewares = (middlewares, devServer) => {
+  devServer: (devServerConfig) => {
+    // Remove deprecated options for webpack-dev-server v5 compatibility
+    delete devServerConfig.onBeforeSetupMiddleware;
+    delete devServerConfig.onAfterSetupMiddleware;
+    
+    // Handle https option - in v5, boolean https should be converted to server.type
+    if (typeof devServerConfig.https === 'boolean') {
+      if (!devServerConfig.server) {
+        devServerConfig.server = {};
+      }
+      if (devServerConfig.https) {
+        devServerConfig.server.type = 'https';
+      }
+      delete devServerConfig.https;
+    } else if (typeof devServerConfig.https === 'object') {
+      // If https is an object with cert/key, use server option
+      if (!devServerConfig.server) {
+        devServerConfig.server = {
+          type: 'https',
+          options: devServerConfig.https
+        };
+      }
+      delete devServerConfig.https;
+    }
+    
+    devServerConfig.setupMiddlewares = (middlewares, devServer) => {
       if (!devServer) throw new Error("webpack-dev-server not defined");
       devServer.app.use(express.json());
 
@@ -704,6 +728,6 @@ module.exports = {
 
       return middlewares;
     };
-    return config;
+    return devServerConfig;
   },
 };
