@@ -45,9 +45,15 @@ All 6 security vulnerabilities mentioned in the Dependabot alerts have been reso
 }
 ```
 
+Additionally, updated `frontend/craco.config.js` to handle webpack-dev-server v5 API changes:
+- Removed deprecated `onBeforeSetupMiddleware` and `onAfterSetupMiddleware` options
+- Migrated `https` option to new `server.type` format
+- Updated to use `setupMiddlewares` API
+
 **Verification:** 
 - Confirmed webpack-dev-server upgraded from v4.15.2 to v5.2.2
 - Frontend build tested successfully
+- Development server tested successfully
 
 ---
 
@@ -126,12 +132,48 @@ All fixes have been validated:
 
 ### For webpack-dev-server (v4 → v5)
 
-The upgrade from webpack-dev-server v4.15.2 to v5.2.2 is a major version change. While the build and development workflow continue to work without issues, please note:
+The upgrade from webpack-dev-server v4.15.2 to v5.2.2 is a major version change that required configuration updates:
 
+**API Changes Made:**
+1. **Deprecated Options Removed**: `onBeforeSetupMiddleware` and `onAfterSetupMiddleware` were deprecated in webpack-dev-server v5
+2. **HTTPS Configuration**: The `https` boolean/object option was migrated to the new `server.type` and `server.options` format
+3. **Middleware Setup**: Updated to use the new `setupMiddlewares` function that returns a middlewares array
+
+**Configuration Changes in `craco.config.js`:**
+```javascript
+devServer: (devServerConfig) => {
+  // Remove deprecated options
+  delete devServerConfig.onBeforeSetupMiddleware;
+  delete devServerConfig.onAfterSetupMiddleware;
+  
+  // Migrate https option to server.type
+  if (typeof devServerConfig.https === 'boolean') {
+    devServerConfig.server = devServerConfig.server || {};
+    if (devServerConfig.https) {
+      devServerConfig.server.type = 'https';
+    }
+    delete devServerConfig.https;
+  }
+  
+  // Use new setupMiddlewares API
+  devServerConfig.setupMiddlewares = (middlewares, devServer) => {
+    // Custom middleware setup...
+    return middlewares;
+  };
+  
+  return devServerConfig;
+}
+```
+
+**Testing Results:**
+- ✅ Development server starts successfully
+- ✅ Production build completes without issues
+- ✅ All custom middleware configurations work as expected
+
+**Notes:**
 - This is a development-only dependency (not used in production)
 - The security vulnerability only affects development environments
-- All tests have passed with the new version
-- If you encounter any issues with the dev server, please report them
+- All functionality has been preserved with the new API
 
 ## Recommendations
 
