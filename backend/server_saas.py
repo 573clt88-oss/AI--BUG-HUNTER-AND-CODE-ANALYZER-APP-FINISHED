@@ -252,7 +252,7 @@ async def stripe_webhook(request: Request):
         
     except Exception as e:
         logger.error(f"Webhook error: {str(e)}")
-        return {"error": str(e)}
+        return {"error": "Webhook processing failed"}
 
 @api_router.post("/analyze/upload", response_model=AnalysisResult)
 async def analyze_uploaded_file(
