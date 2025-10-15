@@ -14,7 +14,7 @@ def test_stripe_connection():
     """Test basic Stripe connection"""
     api_key = os.environ.get('STRIPE_API_KEY')
     
-    print(f"🔑 Testing Stripe API Key: {api_key[:20]}...")
+    print("🔑 Testing Stripe API Key configured...")
     
     try:
         stripe.api_key = api_key
