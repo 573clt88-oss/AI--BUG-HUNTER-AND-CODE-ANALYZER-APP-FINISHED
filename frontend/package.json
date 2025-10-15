@@ -62,7 +62,8 @@
     "test": "craco test"
   },
   "resolutions": {
-    "prismjs": "^1.30.0"
+    "prismjs": "^1.30.0",
+    "postcss": "^8.4.31"
   },
   "browserslist": {
     "production": [
