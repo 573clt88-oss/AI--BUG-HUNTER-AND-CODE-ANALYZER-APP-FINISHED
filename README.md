@@ -1,5 +1,7 @@
 # 🐛 AI Bug Hunter & Code Analyzer SaaS Platform
 
+> **🔒 Security Update (October 2025)**: All dependencies have been updated to address known security vulnerabilities. See [SECURITY_UPDATE_SUMMARY.md](SECURITY_UPDATE_SUMMARY.md) for details.
+
 A comprehensive AI-powered code analysis platform that detects security vulnerabilities, bugs, and provides improvement suggestions for multiple programming languages.
 
 ## 🚀 Features
