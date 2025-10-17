@@ -16,12 +16,7 @@ click==8.3.0
 cryptography==46.0.1
 distro==1.9.0
 dnspython==2.8.0
-# Note: ecdsa 0.19.1 has CVE-2024-23342 (Minerva timing attack on P-256)
-# The maintainers do not plan to fix this vulnerability as side-channel attacks
-# are considered out of scope. Version 0.19.1 is the latest available.
-# This is a transitive dependency via python-jose. Consider migrating to
-# alternatives like pyca/cryptography if P-256 ECDSA is used in production.
-ecdsa==0.19.1
+
 email-validator==2.3.0
 emergentintegrations==0.1.0
 fastapi==0.110.1
@@ -106,7 +101,10 @@ pytest==8.4.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-firebase==1.2
-python-jose==3.5.0
+# python-jose removed - not used in codebase
+# If JWT/OAuth functionality is needed in the future, consider using:
+# - PyJWT (already included) for JWT tokens
+# - pyca/cryptography (already included) for cryptographic operations
 python-multipart==0.0.20
 pytokens==0.1.10
 pytz==2025.2
