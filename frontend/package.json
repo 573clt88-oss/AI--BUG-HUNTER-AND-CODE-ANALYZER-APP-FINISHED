@@ -63,7 +63,9 @@
   },
   "resolutions": {
     "prismjs": "^1.30.0",
-    "postcss": "^8.4.31"
+    "postcss": "^8.4.49",
+    "webpack-dev-server": "^5.2.2",
+    "@eslint/plugin-kit": "^0.2.8"
   },
   "browserslist": {
     "production": [
